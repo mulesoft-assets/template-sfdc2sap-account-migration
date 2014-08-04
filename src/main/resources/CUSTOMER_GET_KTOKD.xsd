@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+
+    Mule Anypoint Template
+
+    Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	version="1.0">
+	<xsd:element name="CUSTOMER_GET_KTOKD">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="import" minOccurs="0" maxOccurs="1">
+					<xsd:complexType>
+						<xsd:all>
+							<xsd:element name="IV_KTOKD" minOccurs="0" maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation />
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:simpleContent>
+										<xsd:extension base="xsd:string" />
+									</xsd:simpleContent>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="IV_KUNNR" minOccurs="0" maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation>Customer to read KTOKD from.</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:simpleContent>
+										<xsd:extension base="xsd:string" />
+									</xsd:simpleContent>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:all>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="export" minOccurs="0" maxOccurs="1">
+					<xsd:complexType>
+						<xsd:all>
+							<xsd:element name="EV_KTOKD" minOccurs="0" maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation>Export variable: customer's Ktokd</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:simpleContent>
+										<xsd:extension base="xsd:string" />
+									</xsd:simpleContent>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:all>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>
