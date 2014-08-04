@@ -81,7 +81,8 @@ output.__id = input.__id;
 output.__id = input.__id;
 //END -> DO NOT REMOVE
 output.CustomerNumber = input.CUSTOMER;
-output.Name = input.FIELDVALUE;]]></attr>
+]]>
+</attr>
 </Node>
 <Node cacheInMemory="true" enabled="enabled" fileURL="dict:outputPayload" guiName="Map&lt;k,v&gt; WRITER" guiX="900" guiY="20" id="MAP_WRITER0" type="MAP_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>

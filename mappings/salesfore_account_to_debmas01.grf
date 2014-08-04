@@ -227,13 +227,9 @@
 <Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
 <Field __sourcePath="{}/Salesforce_x0020Account/CustomerNumber" containerType="SINGLE" label="CustomerNumber" name="CustomerNumber" type="string"/>
 <Field __sourcePath="{}/Salesforce_x0020Account/Name" containerType="SINGLE" label="Name" name="Name" type="string"/>
-<Field __sourcePath="{}/Salesforce_x0020Account/AccountGroup" containerType="SINGLE" label="AccountGroup" name="AccountGroup" type="string"/>
-<Field __sourcePath="{}/Salesforce_x0020Account/MessageFunction" containerType="SINGLE" label="MessageFunction" name="MessageFunction" type="string"/>
-<Field __sourcePath="{}/Salesforce_x0020Account/BillingStreet" containerType="SINGLE" label="BillingStreet" name="BillingStreet" type="string"/>
 <Field __sourcePath="{}/Salesforce_x0020Account/BillingCity" containerType="SINGLE" label="BillingCity" name="BillingCity" type="string"/>
-<Field __sourcePath="{}/Salesforce_x0020Account/BillingState" containerType="SINGLE" label="BillingState" name="BillingState" type="string"/>
-<Field __sourcePath="{}/Salesforce_x0020Account/BillingCountry" containerType="SINGLE" label="BillingCountry" name="BillingCountry" type="string"/>
-<Field __sourcePath="{}/Salesforce_x0020Account/BillingPostalCode" containerType="SINGLE" label="BillingPostalCode" name="BillingPostalCode" type="string"/>
+<Field __sourcePath="{}/Salesforce_x0020Account/AccountGroup" containerType="SINGLE" label="AccountGroup" name="AccountGroup" type="string"/>
+<Field __sourcePath="{}/Salesforce_x0020Account/MSGFN" containerType="SINGLE" label="MSGFN" name="MSGFN" type="string"/>
 </Record>
 </Metadata>
 <Dictionary>
@@ -247,13 +243,9 @@
 <Context outPort="0" sequenceField="__id" xpath=".">
   <Mapping cloverField="CustomerNumber" trim="true" xpath="CustomerNumber"/>
   <Mapping cloverField="Name" trim="true" xpath="Name"/>
-  <Mapping cloverField="AccountGroup" trim="true" xpath="AccountGroup"/>
-  <Mapping cloverField="MessageFunction" trim="true" xpath="MessageFunction"/>
-  <Mapping cloverField="BillingStreet" trim="true" xpath="BillingStreet"/>
   <Mapping cloverField="BillingCity" trim="true" xpath="BillingCity"/>
-  <Mapping cloverField="BillingState" trim="true" xpath="BillingState"/>
-  <Mapping cloverField="BillingCountry" trim="true" xpath="BillingCountry"/>
-  <Mapping cloverField="BillingPostalCode" trim="true" xpath="BillingPostalCode"/>
+  <Mapping cloverField="AccountGroup" trim="true" xpath="AccountGroup"/>
+  <Mapping cloverField="MSGFN" trim="true" xpath="MSGFN"/>
 </Context>
 ]]></attr>
 <attr name="_data_format"><![CDATA[MAP]]></attr>
@@ -438,13 +430,14 @@ output.RCVPRT = "LS";;
 output.RCVPRN = "MULESOFT";;
 output.SEGMENT = "1";;
 output.KUNNR = input.CustomerNumber;;
-output.ORT01 = input.BillingCity;;
-output.LAND1 = "SK" + input.BillingStreet;;
+output.LAND1 = "SK";;
 
 output.SPRAS = "E";;
 output.SPRAS_ISO = "EN";;
-output.KTOKD = input.AccountGroup;
-output.MSGFN = input.MessageFunction;]]></attr>
+output.KTOKD = input.AccountGroup;;
+output.MSGFN = input.MSGFN;;
+
+output.ORT01 = input.BillingCity;;]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Duplicate Salesforce_Account" guiX="240" guiY="20" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Edge debugMode="true" fromNode="BEAN_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="ba1f668a-cfe4-41a6-bc04-71fc077e36d5" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
