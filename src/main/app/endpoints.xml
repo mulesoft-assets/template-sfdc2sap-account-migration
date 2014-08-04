@@ -24,10 +24,9 @@ Here you should not:
 	* Run validations against external systems
 	* Choose flow of you application based on input parameters">
         <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="${http.port}" path="migrateaccounts" doc:name="Start synchronization"/>
-        <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR  Industry = 'Government')" doc:name="Query accounts for migration"/>
-        <logger message="Number of accounts to be migrated: #[payload]" level="DEBUG" doc:name="Logger"/>
-        <batch:execute name="syncAccountsBatch" doc:name="Trigger syncAccountsBatch"/>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Catch Exception and call defaultChoiceExceptionStrategy"/>
+        <flow-ref name="mainFlow" doc:name="Trigger mainFlow"/>
+        <set-payload   doc:name="Set to Batch status response" value="&lt;h1&gt;Batch Process initiated&lt;/h1&gt;&lt;b&gt;ID:&lt;/b&gt;#[payload.getId()]&lt;br/&gt;&lt;b&gt;Records to Be Processed: &lt;/b&gt;#[payload.getRecordCount()]&lt;br/&gt; &lt;b&gt;Start execution on: &lt;/b&gt;#[new java.util.Date()]"/>
+        <http:response-builder status="200" contentType="text/html" doc:name="Build HTTP response message"/>
     </flow>
     
 </mule>
