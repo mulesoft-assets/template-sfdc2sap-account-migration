@@ -5,30 +5,25 @@
  */
 package org.mule.templates.integration;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import junit.framework.Assert;
 
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.ISODateTimeFormat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
-import org.mule.api.config.MuleProperties;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
-import org.mule.tck.junit4.FunctionalTestCase;
+import org.mule.tck.junit4.rule.DynamicPort;
+
 import com.mulesoft.module.batch.BatchTestHelper;
 import com.sforce.soap.partner.SaveResult;
 
@@ -42,43 +37,48 @@ import com.sforce.soap.partner.SaveResult;
  * 
  * @author damiansima
  * @author MartinZdila
+ * @author Vlado Andoga
  */
-public class BusinessLogicIT extends FunctionalTestCase {
-
-
-	private static final String FLOW_NAME = "triggerFlow";
+public class BusinessLogicIT extends AbstractTemplateTestCase {
+	
+	protected static final int TIMEOUT_SECONDS = 120;
 
 	private static final String KEY_ID = "Id";
 	private static final String KEY_NAME = "Name";
 	private static final String KEY_NUMBER_OF_EMPLOYEES = "NumberOfEmployees";
 	private static final String KEY_INDUSTRY = "Industry";
 	
-	private static final String MAPPINGS_FOLDER_PATH = "./mappings";
-	private static final String TEST_FLOWS_FOLDER_PATH = "./src/test/resources/flows/";
-	private static final String MULE_DEPLOY_PROPERTIES_PATH = "./src/main/app/mule-deploy.properties";
-
-	private static final int TIMEOUT_SEC = 120;
-	private static final String TEMPLATE_NAME = "ab";
-
+	private static final String TEMPLATE_NAME = "sf2sa";
+	
 	private SubflowInterceptingChainLifecycleWrapper retrieveAccountFromSapFlow;
+	private SubflowInterceptingChainLifecycleWrapper deleteAccountFromSalesforceFlow;
+	private SubflowInterceptingChainLifecycleWrapper deleteAccountFromSapFlow;
+	
 	private List<Map<String, Object>> createdAccountsInSalesforce = new ArrayList<Map<String, Object>>();
+	
 	private BatchTestHelper helper;
-
+	
+	@Rule
+	public DynamicPort port = new DynamicPort("http.port");
+	
 	@BeforeClass
 	public static void init() {
-		System.setProperty("watermark.default.expression",
-				ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).print(System.currentTimeMillis() - 5000) // 5 seconds
-		);
 	}
 	
 	@Before
 	public void setUp() throws Exception {	
+		
 		helper = new BatchTestHelper(muleContext);
 	
-		// Flow to retrieve accounts from target system after sync in g
 		retrieveAccountFromSapFlow = getSubFlow("retrieveAccountFromSapFlow");
 		retrieveAccountFromSapFlow.initialise();
-	
+		
+		deleteAccountFromSalesforceFlow = getSubFlow("deleteAccountsFromSalesforceFlow");
+		deleteAccountFromSalesforceFlow.initialise();
+		
+		deleteAccountFromSapFlow = getSubFlow("deleteAccountsFromSapFlow");
+		deleteAccountFromSapFlow.initialise();
+		
 		createTestDataInSandBox();
 	}
 	
@@ -90,9 +90,10 @@ public class BusinessLogicIT extends FunctionalTestCase {
 
 	@Test
 	public void testMainFlow() throws Exception {
-	
-		// Wait for the batch job executed by the poll flow to finish
-		helper.awaitJobTermination(TIMEOUT_SEC * 1000, 500);
+		
+		runFlow("triggerFlow");
+
+		helper.awaitJobTermination(TIMEOUT_SECONDS * 1000, 500);
 		helper.assertJobWasSuccessful();
 	
 		Map<String, Object> payload0 = invokeRetrieveFlow(retrieveAccountFromSapFlow, createdAccountsInSalesforce.get(0));
@@ -107,29 +108,13 @@ public class BusinessLogicIT extends FunctionalTestCase {
 		Assert.assertNull("The account 2 should have not been sync", payload2);
 	}
 
-	
-	@Override
-	protected String getConfigResources() {
-		Properties props = new Properties();
-		try {
-			props.load(new FileInputStream(MULE_DEPLOY_PROPERTIES_PATH));
-		} catch (IOException e) {
-			throw new IllegalStateException(
-					"Could not find mule-deploy.properties file on classpath. " +
-					"Please add any of those files or override the getConfigResources() method to provide the resources by your own.");
-		}
-
-		return props.getProperty("config.resources") + getTestFlows();
-	}
-
 
 	private void createTestDataInSandBox() throws MuleException, Exception {
 		// Create object in target system to be updated
-		
-		String uniqueSuffix = "_" + TEMPLATE_NAME + "_" + System.currentTimeMillis();
+		String uniqueSuffix = "_" + System.currentTimeMillis();
 		
 		Map<String, Object> sapAccount3 = new HashMap<String, Object>();
-		sapAccount3.put(KEY_NAME, "Name_3_SAP" + uniqueSuffix);
+		sapAccount3.put(KEY_NAME, "Name_3_SAP" + TEMPLATE_NAME + uniqueSuffix);
 		List<Map<String, Object>> createdAccountInSap = new ArrayList<Map<String, Object>>();
 		createdAccountInSap.add(sapAccount3);
 	
@@ -141,7 +126,7 @@ public class BusinessLogicIT extends FunctionalTestCase {
 	
 		// This account should be synced
 		Map<String, Object> sfdcAccount0 = new HashMap<String, Object>();
-		sfdcAccount0.put(KEY_NAME, "Name_0_SIEB" + uniqueSuffix);
+		sfdcAccount0.put(KEY_NAME, "Name_0_SFDC" + uniqueSuffix);
 		sfdcAccount0.put(KEY_NUMBER_OF_EMPLOYEES, 6000);
 		sfdcAccount0.put(KEY_INDUSTRY, "Education");
 		createdAccountsInSalesforce.add(sfdcAccount0);
@@ -155,7 +140,7 @@ public class BusinessLogicIT extends FunctionalTestCase {
 
 		// This account should not be synced because of employees / industry
 		Map<String, Object> sfdcAccount2 = new HashMap<String, Object>();
-		sfdcAccount2.put(KEY_NAME, "Name_2_SIEB" + uniqueSuffix);
+		sfdcAccount2.put(KEY_NAME, "Name_2_SFDC" + uniqueSuffix);
 		sfdcAccount2.put(KEY_NUMBER_OF_EMPLOYEES, 204);
 		sfdcAccount2.put(KEY_INDUSTRY, "Energetic");
 		createdAccountsInSalesforce.add(sfdcAccount2);
@@ -171,34 +156,6 @@ public class BusinessLogicIT extends FunctionalTestCase {
 		System.out.println("Results after adding: " + createdAccountsInSalesforce.toString());
 	}
 
-	private String getTestFlows() {
-		File[] listOfFiles = new File(TEST_FLOWS_FOLDER_PATH).listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File f) {
-				return f.isFile() && f.getName().endsWith(".xml");
-			}
-		});
-		
-		if (listOfFiles == null) {
-			return "";
-		}
-		
-		StringBuilder resources = new StringBuilder();
-		for (File f : listOfFiles) {
-			resources.append(",").append(TEST_FLOWS_FOLDER_PATH).append(f.getName());
-		}
-		return resources.toString();
-	}
-
-	@Override
-	protected Properties getStartUpProperties() {
-		Properties properties = new Properties(super.getStartUpProperties());
-		properties.put(
-				MuleProperties.APP_HOME_DIRECTORY_PROPERTY,
-				new File(MAPPINGS_FOLDER_PATH).getAbsolutePath());
-		return properties;
-	}
-
 	@SuppressWarnings("unchecked")
 	protected Map<String, Object> invokeRetrieveFlow(SubflowInterceptingChainLifecycleWrapper flow, Map<String, Object> payload) throws Exception {
 		MuleEvent event = flow.process(getTestEvent(payload, MessageExchangePattern.REQUEST_RESPONSE));
@@ -208,8 +165,6 @@ public class BusinessLogicIT extends FunctionalTestCase {
 	}
 	
 	private void deleteTestAccountsFromSalesforce(List<Map<String, Object>> createdAccountsInSalesforce) throws Exception {
-		SubflowInterceptingChainLifecycleWrapper deleteAccountFromSalesforceFlow = getSubFlow("deleteAccountsFromSalesforceFlow");
-		deleteAccountFromSalesforceFlow.initialise();
 		deleteTestEntityFromSandBox(deleteAccountFromSalesforceFlow, createdAccountsInSalesforce, KEY_ID);
 	}
 
@@ -221,8 +176,6 @@ public class BusinessLogicIT extends FunctionalTestCase {
 				createdAccountsInSap.add(account);
 			}
 		}
-		SubflowInterceptingChainLifecycleWrapper deleteAccountFromSapFlow = getSubFlow("deleteAccountsFromSapFlow");
-		deleteAccountFromSapFlow.initialise();
 		deleteTestEntityFromSandBox(deleteAccountFromSapFlow, createdAccountsInSap, "CustomerNumber");
 	}
 	

@@ -25,7 +25,7 @@ Here you should not:
 	* Choose flow of you application based on input parameters">
         <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="${http.port}" path="migrateaccounts" doc:name="Start synchronization"/>
         <flow-ref name="mainFlow" doc:name="Trigger mainFlow"/>
-        <set-payload   doc:name="Set to Batch status response" value="&lt;h1&gt;Batch Process initiated&lt;/h1&gt;&lt;b&gt;ID:&lt;/b&gt;#[payload.getId()]&lt;br/&gt;&lt;b&gt;Records to Be Processed: &lt;/b&gt;#[payload.getRecordCount()]&lt;br/&gt; &lt;b&gt;Start execution on: &lt;/b&gt;#[new java.util.Date()]"/>
+        <set-payload value="&lt;h1&gt;Batch Process initiated&lt;/h1&gt;&lt;b&gt;ID:&lt;/b&gt;#[payload.getId()]&lt;br/&gt;&lt;b&gt;Records to Be Processed: &lt;/b&gt;#[payload.getRecordCount()]&lt;br/&gt; &lt;b&gt;Start execution on: &lt;/b&gt;#[new java.util.Date()]" doc:name="Set to Batch status response"/>
         <http:response-builder status="200" contentType="text/html" doc:name="Build HTTP response message"/>
     </flow>
     
