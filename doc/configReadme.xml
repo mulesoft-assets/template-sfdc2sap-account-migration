@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 <configuration>
 	<placeholders>
-		<placeholder id="template_name">SFDC2SAP-account-broadcast</placeholder>
+		<placeholder id="template_name">SFDC2SAP-account-migration</placeholder>
 	</placeholders>
 	<sections>
 		<section id="use_case">
 			This Anypoint Template should serve as a foundation for setting an online sync of accounts/customers from Salesforce to SAP.
-			Everytime there is a new account or a change in already existing one in Salesforce instance, the template will fetch it and send it as IDoc to SAP to update customer there.
-			
+			Use this template if would like to sync accounts from Salesforce to SAP customers in manner one time synchronization hitting the Http endpoint.
+			The template will fetch all accounts by	specified criteria and send it as IDoc to SAP to create/update	customer there.
 			Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
-			
 			As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
 			The batch job is divided in Input, Process and On Complete stages.
-			The integration is triggered by poll to Salesforce Accounts. New or modified accounts are passed to the batch as input.
-			In the batch the customer is fetched from SAP by its name. If it exists, its SAP Account Group is resolved against SAP.
-			If it doesn't exist, then new customer number is fetched from SAP. Afterwards every such account from Salesforce is sent to SAP in form of iDoc XML where it is asynchronously updated or created. 
+			The integration is triggered by the Http endpoint to fetch all Salesforce Accounts suitable for migration.
+			Fetched accounts are passed to the batch as input. In the batch the customer is fetched from SAP by its name.
+			If it exists, its SAP Account Group is resolved against SAP. If it doesn't exist, then new customer number is fetched from SAP.
+			Afterwards every such account from Salesforce is sent to SAP in form of iDoc XML where it is asynchronously updated or created.
 			Finally during the On Complete stage the Anypoint Template will log output statistics data into the console.
 		</section>
 		<section id="running_on_studio">
@@ -42,14 +42,24 @@ You will find that there are three dependencies in the pom.xml file that begin w
 These dependencies are private for Mulesoft and will cause you application not to build from a Maven command line. You need to replace them with "provided" scope and copy the libraries into the build path.
 		]]>
 		</section>
+		<section id="run_it">
+		<![CDATA[
+In any of the ways you would like to run this Template this is an example of the output you'll see after hitting the HTTP endpoint:
+
+<pre>
+<h1>Batch Process initiated</h1>
+<b>ID:</b>6eea3cc6-7c96-11e3-9a65-55f9f3ae584e<br/>
+<b>Records to Be Processed: </b>9<br/>
+<b>Start execution on: </b>Mon Jan 13 18:05:33 GMT-03:00 2014
+</pre>
+		]]>
+		</section>
 		<section id="api_calls">&#160;</section>
 		<section id="application_configuration">
 		<![CDATA[
 **Common configuration**
 
-+ polling.frequency `10000`
-+ polling.start.delay `5000`
-+ watermark.default.expression `2014-06-26T12:30:00.000Z`
++ http.port `9090`
 		
 **SalesForce Connector configuration**
 
@@ -67,7 +77,14 @@ These dependencies are private for Mulesoft and will cause you application not t
 + sap.jco.client `800`
 + sap.jco.lang `EN`
 + sap.default.accountGroup `ZAG2`
-]]>
+
+#SAP Endpoint configuration
+
++ sap.jco.connectioncount `1`
++ sap.jco.gwhost `your.bpc.server.domain`
++ sap.jco.gwservice `your.gwservice`
++ sap.jco.idoc.programid `idoc_receive`
+		]]>
 		</section>
 	</sections>
 </configuration>
