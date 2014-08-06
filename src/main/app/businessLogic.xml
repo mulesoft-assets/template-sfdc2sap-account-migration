@@ -28,7 +28,7 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
         </batch:input>
 		<batch:process-records>
             <batch:step name="foreachAccountInSalesforceGetAccountInSap">
-                <enricher source="#[payload.isEmpty() || payload[0]['CustomerNumber'] == null ? NullPayload.getInstance() : payload[0]]" target="#[recordVars['sapCustomer']]" doc:name="store result in record var 'sapCustomer'">
+                <enricher source="#[payload.isEmpty() || payload[0]['CustomerNumber'] == null ? NullPayload.getInstance() : payload[0]]" target="#[recordVars['sapCustomer']]" doc:name="store result in record var 'sapCustomer'" doc:description="Query customer from the SAP by a saleforce account name. The query result is stored to the 'sapCustomer' record variable to be processed/enhanced in next batch steps.">
                     <processor-chain doc:name="Processor Chain">
                         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_FIND" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Get Customer by Name">
                             <sap:definition><![CDATA[<jco>
@@ -53,7 +53,7 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
                 </enricher>
             </batch:step>
             <batch:step name="forEachAccountInSapGetAccountGroup" accept-expression="!(recordVars['sapCustomer'] is NullPayload)">
-                <enricher source="#[payload['AccountGroup']]" target="#[payload['AccountGroup']]" doc:name="store 'AccountGroup' to payload">
+                <enricher source="#[payload['AccountGroup']]" target="#[payload['AccountGroup']]" doc:name="store 'AccountGroup' to payload" doc:description="Query account group from the SAP by a customer Id. ">
                     <processor-chain doc:name="Processor Chain">
                         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="CUSTOMER_GET_KTOKD" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Get Account Group from SAP">
                             <sap:definition><![CDATA[<jco>
@@ -71,7 +71,7 @@ payload.put('CustomerNumber', recordVars['sapCustomer']['CustomerNumber']);
 ]]></expression-component>
             </batch:step>
             <batch:step name="forEachNewAccountGetCustomerNumber" accept-expression="recordVars['sapCustomer'] is NullPayload">
-                <enricher source="#[payload['CustomerNumber']]" target="#[payload['CustomerNumber']]" doc:name="store 'CustomerNumber' to payload">
+                <enricher source="#[payload['CustomerNumber']]" target="#[payload['CustomerNumber']]" doc:name="store 'CustomerNumber' to payload" doc:description="If customer account record variable has null payload we need to create new record in SAP and ask for a customer number.">
                     <processor-chain doc:name="Processor Chain">
                         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_GETINTNUMBER" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Get Next Customer Number from SAP">
                             <sap:definition><![CDATA[<jco>
@@ -99,15 +99,17 @@ payload.put('AccountGroup', '${sap.default.accountGroup}');
 				message="Migration process has finished: #[payload]" />
 		</batch:on-complete>
 	</batch:job>
-    <flow name="commitAccountsFlow" doc:name="commitAccountsFlow">
+    <flow name="commitAccountsFlow" doc:name="commitAccountsFlow" doc:description="Commits transformed saleforce accounts(customers) to SAP and logs result.">
         <logger message="Accounts to update/create: #[payload]" level="INFO" doc:name="Log Accounts to update/create"/>
         <data-mapper:transform config-ref="Salesfore_Account_to_DEBMAS01" doc:name="Salesfore Account to DEBMAS01"/>
         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="idoc" functionName="DEBMAS01" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Upsert Customer in SAP"/>
         <logger message="Upsert result: #[payload]" level="INFO" doc:name="Log Result"/>
     </flow>
-    <flow name="mainFlow" doc:name="mainFlow">
+    <flow name="mainFlow" doc:name="mainFlow" doc:description="This flow is the entry point to the Kick business logic.
+
+This flow should control the direction of the application, and it should be called by the different endpoints that your Template exposes to trigger it.">
         <batch:execute name="syncAccountsBatch" doc:name="trigger syncAccountsBatch"/>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="catch Exception and call defaultChoiceExceptionStrategy"/>
+        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="catch Exception and call defaultChoiceExceptionStrategy" doc:description="If problems occured."/>
     </flow>
 
 </mule>

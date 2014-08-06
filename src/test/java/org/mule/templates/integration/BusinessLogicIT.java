@@ -7,7 +7,6 @@ package org.mule.templates.integration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -15,12 +14,10 @@ import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
-import org.mule.api.MuleException;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.tck.junit4.rule.DynamicPort;
 
@@ -61,33 +58,26 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 	@Rule
 	public DynamicPort port = new DynamicPort("http.port");
 	
-	@BeforeClass
-	public static void init() {
-	}
-	
 	@Before
 	public void setUp() throws Exception {	
 		
 		helper = new BatchTestHelper(muleContext);
 	
-		retrieveAccountFromSapFlow = getSubFlow("retrieveAccountFromSapFlow");
-		retrieveAccountFromSapFlow.initialise();
-		
-		deleteAccountFromSalesforceFlow = getSubFlow("deleteAccountsFromSalesforceFlow");
-		deleteAccountFromSalesforceFlow.initialise();
-		
-		deleteAccountFromSapFlow = getSubFlow("deleteAccountsFromSapFlow");
-		deleteAccountFromSapFlow.initialise();
+		initialiseSubFlows();
 		
 		createTestDataInSandBox();
 	}
-	
+
 	@After
 	public void tearDown() throws Exception {		
 		deleteTestAccountsFromSalesforce(createdAccountsInSalesforce);
 		deleteTestAccountsFromSap(createdAccountsInSalesforce);
 	}
 
+	/**
+	 * Runs and check the main flow - business logic.
+	 * @throws Exception when flow is unsuccessful
+	 */
 	@Test
 	public void testMainFlow() throws Exception {
 		
@@ -107,9 +97,28 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 		Map<String, Object>  payload2 = invokeRetrieveFlow(retrieveAccountFromSapFlow, createdAccountsInSalesforce.get(2));
 		Assert.assertNull("The account 2 should have not been sync", payload2);
 	}
+	
+	/**
+	 * Inits all tests sub-flows.
+	 * @throws Exception when initialisation is unsuccessful 
+	 */
+	private void initialiseSubFlows() throws Exception {
+		retrieveAccountFromSapFlow = getSubFlow("retrieveAccountFromSapFlow");
+		retrieveAccountFromSapFlow.initialise();
+		
+		deleteAccountFromSalesforceFlow = getSubFlow("deleteAccountsFromSalesforceFlow");
+		deleteAccountFromSalesforceFlow.initialise();
+		
+		deleteAccountFromSapFlow = getSubFlow("deleteAccountsFromSapFlow");
+		deleteAccountFromSapFlow.initialise();
+	}
 
 
-	private void createTestDataInSandBox() throws MuleException, Exception {
+	/**
+	 * Creates tests data in SAP and SalesForce. Created records are tracked for the needs of cleanup. 
+	 * @throws Exception when the run of flow is unsuccessful
+	 */
+	private void createTestDataInSandBox() throws Exception {
 		// Create object in target system to be updated
 		String uniqueSuffix = "_" + System.currentTimeMillis();
 		
@@ -156,6 +165,13 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 		System.out.println("Results after adding: " + createdAccountsInSalesforce.toString());
 	}
 
+	/**
+	 * Invokes test flow with passed payload.
+	 * @param flow the test flow, which should be invoked
+	 * @param payload the payload for the flow
+	 * @return the flow result as map
+	 * @throws Exception when the flow invocation is unsuccessful
+	 */
 	@SuppressWarnings("unchecked")
 	protected Map<String, Object> invokeRetrieveFlow(SubflowInterceptingChainLifecycleWrapper flow, Map<String, Object> payload) throws Exception {
 		MuleEvent event = flow.process(getTestEvent(payload, MessageExchangePattern.REQUEST_RESPONSE));
@@ -164,10 +180,20 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 		return resultPayload2.isEmpty() ? null : resultPayload2.get(0).get("CustomerNumber") == null ? null : resultPayload2.get(0);
 	}
 	
+	/**
+	 * Deletes test accounts created in SalesForce.
+	 * @param createdAccountsInSalesforce the accounts to be deleted
+	 * @throws Exception when delete invocation is unsuccessful
+	 */
 	private void deleteTestAccountsFromSalesforce(List<Map<String, Object>> createdAccountsInSalesforce) throws Exception {
 		deleteTestEntityFromSandBox(deleteAccountFromSalesforceFlow, createdAccountsInSalesforce, KEY_ID);
 	}
 
+	/**
+	 * Deletes test customers created in SAP. 
+	 * @param createdAccountsInSalesforce created accounts in saleForce(the same customers should be created also in SAP)
+	 * @throws Exception when delete invocation is unsuccessful
+	 */
 	private void deleteTestAccountsFromSap(List<Map<String, Object>> createdAccountsInSalesforce) throws Exception {
 		List<Map<String, Object>> createdAccountsInSap = new ArrayList<Map<String, Object>>();
 		for (Map<String, Object> c : createdAccountsInSalesforce) {
@@ -179,6 +205,14 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 		deleteTestEntityFromSandBox(deleteAccountFromSapFlow, createdAccountsInSap, "CustomerNumber");
 	}
 	
+	/**
+	 * General delete by specified delete flow.
+	 * @param deleteFlow the concrete delete flow
+	 * @param entitities the entities for a delete
+	 * @param idName the name of Id
+	 * @return the mule event.
+	 * @throws Exception when delete invocation is unsuccessful
+	 */
 	private MuleEvent deleteTestEntityFromSandBox(SubflowInterceptingChainLifecycleWrapper deleteFlow, List<Map<String, Object>> entitities, String idName) throws Exception {
 		List<String> idList = new ArrayList<String>();
 		for (Map<String, Object> c : entitities) {
