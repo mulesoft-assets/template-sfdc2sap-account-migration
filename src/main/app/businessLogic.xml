@@ -89,7 +89,7 @@ payload.put('AccountGroup', '${sap.default.accountGroup}');
 ]]></expression-component>
             </batch:step>
 			<batch:step name="foreachAccountInSalesForceUpsertAccountInSapStep">
-                <flow-ref name="commitAccountsFlow" doc:name="Flow Reference"/>
+                <flow-ref name="commitAccountsFlow" doc:name="call commitAccountsFlow"/>
 			</batch:step>
 		</batch:process-records>
 		<batch:on-complete>

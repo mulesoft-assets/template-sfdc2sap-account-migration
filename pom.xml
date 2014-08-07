@@ -11,7 +11,7 @@
 
 	<artifactId>template-sfdc2sap-account-migration</artifactId>
 	<packaging>mule</packaging>
-	<version>1.1.0.-SNAPSHOT</version>
+	<version>1.0.0.-SNAPSHOT</version>
 	<name>template-sfdc2sap-account-migration Anypoint Template Project</name>
 
 	<properties>
@@ -32,7 +32,6 @@
 				</configuration>
 			</plugin>
 		
-			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -86,6 +85,7 @@
 
 	<dependencies>
 		
+		<!-- Connectors -->
 		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-module-sfdc</artifactId>
@@ -96,8 +96,14 @@
 			<artifactId>mule-transport-sap</artifactId>
 			<version>${sap.version}</version>
 		</dependency>
-
-		
+		<dependency>
+            <groupId>org.mule.transports</groupId>
+            <artifactId>mule-transport-http</artifactId>
+            <version>${mule.version}</version>
+            <scope>provided</scope>
+        </dependency>
+			
+		<!-- SAP Dependencies -->
 		<dependency>
 			<groupId>com.sap.conn.jco</groupId>
 			<artifactId>sapjco</artifactId>
@@ -124,7 +130,7 @@
 			<version>${mule.version}</version>
 			<scope>provided</scope>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
