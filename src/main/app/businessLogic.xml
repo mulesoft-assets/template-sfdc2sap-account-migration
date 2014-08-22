@@ -17,7 +17,6 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd
 http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd">
     <data-mapper:config name="Salesfore_Account_to_DEBMAS01" transformationGraphPath="salesfore_account_to_debmas01.grf" doc:name="Salesfore_Account_to_DEBMAS01"/>
-    <data-mapper:config name="Salesforce_Account_to_BAPI_CUSTOMER_CREATE" transformationGraphPath="salesforce_account_to_bapi_customer_create.grf" doc:name="Salesforce_Account_to_BAPI_CUSTOMER_CREATE"/>
     <data-mapper:config name="CUSTOMER_GET_KTOKD_to_KTOKD" transformationGraphPath="customer_get_ktokd_to_ktokd.grf" doc:name="CUSTOMER_GET_KTOKD_to_KTOKD"/>
     <data-mapper:config name="BAPI_CUSTOMER_FIND_to_Customer" transformationGraphPath="bapi_customer_find_to_customer.grf" doc:name="BAPI_CUSTOMER_FIND_to_Customer"/>
     <data-mapper:config name="BAPI_CUSTOMER_GETINTNUMBER_to_Customr_Number" transformationGraphPath="bapi_customer_getintnumber_to_customr_number.grf" doc:name="BAPI_CUSTOMER_GETINTNUMBER_to_Customr_Number"/>

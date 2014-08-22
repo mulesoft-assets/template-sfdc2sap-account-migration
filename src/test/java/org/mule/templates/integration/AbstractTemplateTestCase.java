@@ -19,6 +19,7 @@ import org.mule.tck.junit4.rule.DynamicPort;
  * This is the base test class for Anypoint Templates integration tests.
  * 
  * @author damiansima
+ * @author Vlado Andoga
  */
 public class AbstractTemplateTestCase extends FunctionalTestCase {
 	private static final String MAPPINGS_FOLDER_PATH = "./mappings";
