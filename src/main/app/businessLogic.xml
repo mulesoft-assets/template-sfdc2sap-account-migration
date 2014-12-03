@@ -5,7 +5,7 @@
 	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
 	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.1"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.2"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
@@ -30,22 +30,29 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
                 <enricher source="#[payload.isEmpty() || payload[0]['CustomerNumber'] == null ? NullPayload.getInstance() : payload[0]]" target="#[recordVars['sapCustomer']]" doc:name="store result in record var 'sapCustomer'" doc:description="Query customer from the SAP by a saleforce account name. The query result is stored to the 'sapCustomer' record variable to be processed/enhanced in next batch steps.">
                     <processor-chain doc:name="Processor Chain">
                         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_FIND" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Get Customer by Name">
-                            <sap:definition><![CDATA[<jco>
+                            <sap:definition><![CDATA[<BAPI_CUSTOMER_FIND type="function">
 	<import>
-		<field name="MAX_CNT">0</field>
-		<field name="PL_HOLD">X</field>
+		<MAX_CNT type="field" sapType="INT">0</MAX_CNT>
+		<PL_HOLD type="field" sapType="CHAR" sapLength="1">X</PL_HOLD>
 	</import>
   	<tables>
+  	<SELOPT_TAB type="table">
 		<table name="SELOPT_TAB">
 			<row id="0">
-				<field name="TABNAME">KNA1</field>
-				<field name="FIELDNAME">NAME1</field>
-				<field name="FIELDVALUE">#[org.apache.commons.lang3.StringEscapeUtils.escapeXml(payload['Name'])]</field>
+				<TABNAME type="field"
+					sapDescription="Customer Number"
+					sapType="CHAR" sapLength="4">KNA1</TABNAME>
+				<FIELDNAME type="field"
+					sapDescription="Customer Number"
+					sapType="CHAR" sapLength="5">NAME1</FIELDNAME>
+				<FIELDVALUE type="field" 
+					sapDescription="Customer Number"
+					sapType="CHAR" sapLength="20">#[org.apache.commons.lang3.StringEscapeUtils.escapeXml(payload['Name'])]</FIELDVALUE>
 			</row>
 		</table>
+		</SELOPT_TAB>
 	</tables>
-</jco>
-]]></sap:definition>
+</BAPI_CUSTOMER_FIND>]]></sap:definition>
                         </sap:outbound-endpoint>
                         <data-mapper:transform config-ref="BAPI_CUSTOMER_FIND_to_Customer" doc:name="BAPI_CUSTOMER_FIND to Customer"/>
                     </processor-chain>
@@ -55,12 +62,11 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
                 <enricher source="#[payload['AccountGroup']]" target="#[payload['AccountGroup']]" doc:name="store 'AccountGroup' to payload" doc:description="Query account group from the SAP by a customer Id. ">
                     <processor-chain doc:name="Processor Chain">
                         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="CUSTOMER_GET_KTOKD" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Get Account Group from SAP">
-                            <sap:definition><![CDATA[<jco>
+                            <sap:definition><![CDATA[<CUSTOMER_GET_KTOKD type="function">
 	<import>
-		<field name="IV_KUNNR">#[recordVars['sapCustomer']['Id']]</field>
+			<IV_KUNNR type="field" sapType="CHAR" sapLength="20">#[recordVars['sapCustomer']['Id']]</IV_KUNNR>
 	</import>
-</jco>
-]]></sap:definition>
+</CUSTOMER_GET_KTOKD>]]></sap:definition>
                         </sap:outbound-endpoint>
                         <data-mapper:transform config-ref="CUSTOMER_GET_KTOKD_to_KTOKD" doc:name="CUSTOMER_GET_KTOKD to AccountGroup"/>
                     </processor-chain>
@@ -73,11 +79,11 @@ payload.put('CustomerNumber', recordVars['sapCustomer']['CustomerNumber']);
                 <enricher source="#[payload['CustomerNumber']]" target="#[payload['CustomerNumber']]" doc:name="store 'CustomerNumber' to payload" doc:description="If customer account record variable has null payload we need to create new record in SAP and ask for a customer number.">
                     <processor-chain doc:name="Processor Chain">
                         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_GETINTNUMBER" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Get Next Customer Number from SAP">
-                            <sap:definition><![CDATA[<jco>
+                            <sap:definition><![CDATA[<BAPI_CUSTOMER_GETINTNUMBER type="function">
 	<import>
-		<field name="ACCOUNTGROUP">${sap.default.accountGroup}</field>
+			<ACCOUNTGROUP type="field" sapType="CHAR" sapLength="20">${sap.default.accountGroup}</ACCOUNTGROUP>
 	</import>
-</jco>
+</BAPI_CUSTOMER_GETINTNUMBER>
 ]]></sap:definition>
                         </sap:outbound-endpoint>
                         <data-mapper:transform config-ref="BAPI_CUSTOMER_GETINTNUMBER_to_Customr_Number" doc:name="BAPI_CUSTOMER_GETINTNUMBER to Customr Number"/>
