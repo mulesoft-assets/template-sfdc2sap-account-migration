@@ -60,14 +60,11 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
   	<SELOPT_TAB type="table">
 		<table name="SELOPT_TAB">
 			<row id="0">
-				<TABNAME type="field"
-					sapDescription="Customer Number"
+				<TABNAME type="field" 
 					sapType="CHAR" sapLength="4">KNA1</TABNAME>
-				<FIELDNAME type="field"
-					sapDescription="Customer Number"
+				<FIELDNAME type="field" 
 					sapType="CHAR" sapLength="5">NAME1</FIELDNAME>
 				<FIELDVALUE type="field" 
-					sapDescription="Customer Number"
 					sapType="CHAR" sapLength="20">#[org.apache.commons.lang3.StringEscapeUtils.escapeXml(payload['Name'])]</FIELDVALUE>
 			</row>
 		</table>

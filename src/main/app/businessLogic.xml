@@ -40,13 +40,10 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
 		<table name="SELOPT_TAB">
 			<row id="0">
 				<TABNAME type="field"
-					sapDescription="Customer Number"
 					sapType="CHAR" sapLength="4">KNA1</TABNAME>
 				<FIELDNAME type="field"
-					sapDescription="Customer Number"
 					sapType="CHAR" sapLength="5">NAME1</FIELDNAME>
 				<FIELDVALUE type="field" 
-					sapDescription="Customer Number"
 					sapType="CHAR" sapLength="20">#[org.apache.commons.lang3.StringEscapeUtils.escapeXml(payload['Name'])]</FIELDVALUE>
 			</row>
 		</table>
