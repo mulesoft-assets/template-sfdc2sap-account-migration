@@ -190,7 +190,7 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + sap.jco.client `800`
 + sap.jco.lang `EN`
 
-**SAP Endpoint configuration
+**SAP Endpoint configuration**
 
 + sap.jco.connectioncount `1`
 + sap.jco.gwhost `your.bpc.server.domain`
