@@ -54,7 +54,7 @@ In any of the ways you would like to run this Template this is an example of the
 </pre>
 		]]>
 		</section>
-		<section id="api_calls">&#160;</section>
+		<section id="api_calls">There are no particular considerations for this Anypoint Template regarding API calls</section>
 		<section id="application_configuration">
 		<![CDATA[
 **Common configuration**

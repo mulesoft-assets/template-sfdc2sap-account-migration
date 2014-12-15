@@ -105,6 +105,7 @@ column='486'
 
 
 
+
 # Run it! <a name="runit"/>
 Simple steps to get SFDC2SAP-account-migration running.
 In any of the ways you would like to run this Template this is an example of the output you'll see after hitting the HTTP endpoint:
@@ -195,7 +196,7 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + sap.jco.idoc.programid `idoc_receive`
 
 # API Calls <a name="apicalls"/>
- 
+There are no particular considerations for this Anypoint Template regarding API calls
 
 
 # Customize It!<a name="customizeit"/>
