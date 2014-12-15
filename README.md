@@ -1,5 +1,5 @@
 
-# Anypoint Template: SFDC2SAP-account-migration
+# Anypoint Template: Salesforce to SAP Account Migration
 
 + [License Agreement](#licenseagreement)
 + [Use Case](#usecase)
@@ -27,16 +27,17 @@ Please review the terms of the license before downloading and using this templat
 
 # Use Case <a name="usecase"/>
 This Anypoint Template should serve as a foundation for setting an online sync of accounts/customers from Salesforce to SAP.
-			Use this template if would like to sync accounts from Salesforce to SAP customers in manner one time synchronization hitting the Http endpoint.
-			The template will fetch all accounts by	specified criteria and send it as IDoc to SAP to create/update	customer there.
-			Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
-			As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
-			The batch job is divided in Input, Process and On Complete stages.
-			The integration is triggered by the Http endpoint to fetch all Salesforce Accounts suitable for migration.
-			Fetched accounts are passed to the batch as input. In the batch the customer is fetched from SAP by its name.
-			If it exists, its SAP Account Group is resolved against SAP. If it doesn't exist, then new customer number is fetched from SAP.
-			Afterwards every such account from Salesforce is sent to SAP in form of iDoc XML where it is asynchronously updated or created.
-			Finally during the On Complete stage the Anypoint Template will log output statistics data into the console.
+
+Use this template if would like to sync accounts from Salesforce to SAP customers in manner one time synchronization hitting the HTTP endpoint. The template will fetch all accounts by	specified criteria and send it as IDoc to SAP to create/update customer there.
+Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
+
+As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+The batch job is divided in Input, Process and On Complete stages.
+The integration is triggered by the HTTP endpoint to fetch all Salesforce Accounts suitable for migration.
+Fetched accounts are passed to the batch as input. In the batch the customer is fetched from SAP by its name.
+If it exists, its SAP Account Group is resolved against SAP. If it doesn't exist, then new customer number is fetched from SAP.
+Afterwards every such account from Salesforce is sent to SAP in form of iDoc XML where it is asynchronously updated or created.
+Finally during the On Complete stage the Anypoint Template will log output statistics data into the console.
 
 # Considerations <a name="considerations"/>
 
@@ -107,7 +108,7 @@ column='486'
 
 
 # Run it! <a name="runit"/>
-Simple steps to get SFDC2SAP-account-migration running.
+Simple steps to get Salesforce to SAP Account Migration running.
 In any of the ways you would like to run this Template this is an example of the output you'll see after hitting the HTTP endpoint:
 
 <pre>
