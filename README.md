@@ -171,7 +171,9 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 **Common configuration**
 
 + http.port `9090`
-		
++ page.size `1000`		
++ sap.default.accountGroup `ZAG2`
+
 **SalesForce Connector configuration**
 
 + sfdc.username `bob.dylan@sfdc`
@@ -187,7 +189,6 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + sap.jco.sysnr `14`
 + sap.jco.client `800`
 + sap.jco.lang `EN`
-+ sap.default.accountGroup `ZAG2`
 
 #SAP Endpoint configuration
 
