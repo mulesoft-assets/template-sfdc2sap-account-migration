@@ -5,7 +5,7 @@
 	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
 	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.2"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
@@ -23,13 +23,13 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
 	<batch:job name="syncAccountsBatch">
 		<batch:threading-profile poolExhaustedAction="WAIT" />
         <batch:input>
-            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR  Industry = 'Government')" doc:name="Query accounts for migration"/>
+            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR  Industry = 'Government')" doc:name="query accounts for migration"/>
         </batch:input>
 		<batch:process-records>
             <batch:step name="foreachAccountInSalesforceGetAccountInSap">
                 <enricher source="#[payload.isEmpty() || payload[0]['CustomerNumber'] == null ? NullPayload.getInstance() : payload[0]]" target="#[recordVars['sapCustomer']]" doc:name="store result in record var 'sapCustomer'" doc:description="Query customer from the SAP by a saleforce account name. The query result is stored to the 'sapCustomer' record variable to be processed/enhanced in next batch steps.">
                     <processor-chain doc:name="Processor Chain">
-                        <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_FIND" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Get Customer by Name">
+                        <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_FIND" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="get Customer by Name">
                             <sap:definition><![CDATA[<BAPI_CUSTOMER_FIND type="function">
 	<import>
 		<MAX_CNT type="field" sapType="INT">0</MAX_CNT>
@@ -58,7 +58,7 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
             <batch:step name="forEachAccountInSapGetAccountGroup" accept-expression="!(recordVars['sapCustomer'] is NullPayload)">
                 <enricher source="#[payload['AccountGroup']]" target="#[payload['AccountGroup']]" doc:name="store 'AccountGroup' to payload" doc:description="Query account group from the SAP by a customer Id. ">
                     <processor-chain doc:name="Processor Chain">
-                        <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="CUSTOMER_GET_KTOKD" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Get Account Group from SAP">
+                        <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="CUSTOMER_GET_KTOKD" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="get Account Group from SAP">
                             <sap:definition><![CDATA[<CUSTOMER_GET_KTOKD type="function">
 	<import>
 			<IV_KUNNR type="field" sapType="CHAR" sapLength="20">#[recordVars['sapCustomer']['Id']]</IV_KUNNR>
@@ -68,14 +68,14 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
                         <data-mapper:transform config-ref="CUSTOMER_GET_KTOKD_to_KTOKD" doc:name="CUSTOMER_GET_KTOKD to AccountGroup"/>
                     </processor-chain>
                 </enricher>
-                <expression-component doc:name="Setup Properties for Update"><![CDATA[payload.put('MessageFunction', '005'); // Replace: This message replaces previous messages
+                <expression-component doc:name="setup Properties for Update"><![CDATA[payload.put('MessageFunction', '005'); // Replace: This message replaces previous messages
 payload.put('CustomerNumber', recordVars['sapCustomer']['CustomerNumber']);
 ]]></expression-component>
             </batch:step>
             <batch:step name="forEachNewAccountGetCustomerNumber" accept-expression="recordVars['sapCustomer'] is NullPayload">
                 <enricher source="#[payload['CustomerNumber']]" target="#[payload['CustomerNumber']]" doc:name="store 'CustomerNumber' to payload" doc:description="If customer account record variable has null payload we need to create new record in SAP and ask for a customer number.">
                     <processor-chain doc:name="Processor Chain">
-                        <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_GETINTNUMBER" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Get Next Customer Number from SAP">
+                        <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_GETINTNUMBER" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="get Next Customer Number from SAP">
                             <sap:definition><![CDATA[<BAPI_CUSTOMER_GETINTNUMBER type="function">
 	<import>
 			<ACCOUNTGROUP type="field" sapType="CHAR" sapLength="20">${sap.default.accountGroup}</ACCOUNTGROUP>
@@ -86,7 +86,7 @@ payload.put('CustomerNumber', recordVars['sapCustomer']['CustomerNumber']);
                         <data-mapper:transform config-ref="BAPI_CUSTOMER_GETINTNUMBER_to_Customr_Number" doc:name="BAPI_CUSTOMER_GETINTNUMBER to Customr Number"/>
                     </processor-chain>
                 </enricher>
-                <expression-component doc:name="Setup Properties for Create"><![CDATA[payload.put('MessageFunction', '009'); // Original: First message for process
+                <expression-component doc:name="setup Properties for Create"><![CDATA[payload.put('MessageFunction', '009'); // Original: First message for process
 payload.put('AccountGroup', '${sap.default.accountGroup}');
 ]]></expression-component>
             </batch:step>
@@ -96,18 +96,18 @@ payload.put('AccountGroup', '${sap.default.accountGroup}');
 		</batch:process-records>
 		<batch:on-complete>
 			<json:object-to-json-transformer
-				doc:name="Transform BatchJobInstance to JSON" />
-			<logger level="INFO" doc:name="Log 'Migration process has finished'"
+				doc:name="transform BatchJobInstance to JSON" />
+			<logger level="INFO" doc:name="log 'Migration process has finished'"
 				message="Migration process has finished: #[payload]" />
 		</batch:on-complete>
 	</batch:job>
-    <flow name="commitAccountsFlow" doc:name="commitAccountsFlow" doc:description="Commits transformed saleforce accounts(customers) to SAP and logs result.">
-        <logger message="Accounts to update/create: #[payload]" level="INFO" doc:name="Log Accounts to update/create"/>
+    <sub-flow name="commitAccountsFlow">
+        <logger message="Accounts to update/create: #[payload]" level="INFO" doc:name="log Accounts to update/create"/>
         <data-mapper:transform config-ref="Salesfore_Account_to_DEBMAS01" doc:name="Salesfore Account to DEBMAS01"/>
-        <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="idoc" functionName="DEBMAS01" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Upsert Customer in SAP"/>
-        <logger message="Upsert result: #[payload]" level="INFO" doc:name="Log Result"/>
-    </flow>
-    <flow name="mainFlow" doc:name="mainFlow" doc:description="This flow is the entry point to the Kick business logic.
+        <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="idoc" functionName="DEBMAS01" xmlVersion="2" outputXml="true" responseTimeout="10000" doc:name="upsert Customer in SAP"/>
+        <logger message="Upsert result: #[payload]" level="INFO" doc:name="log Result"/>
+    </sub-flow>
+    <flow name="mainFlow"  doc:description="This flow is the entry point to the Kick business logic.
 
 This flow should control the direction of the application, and it should be called by the different endpoints that your Template exposes to trigger it.">
         <batch:execute name="syncAccountsBatch" doc:name="trigger syncAccountsBatch"/>
