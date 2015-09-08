@@ -68,6 +68,20 @@
 			<version>${sap.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.sap.conn.jco</groupId>
+			<artifactId>sapjco</artifactId>
+			<version>${sap.jco.version}</version>
+			<scope>provided</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.sap.conn.idoc</groupId>
+			<artifactId>sapidoc</artifactId>
+			<version>${sap.idoc.version}</version>
+			<scope>provided</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
 			<groupId>com.mulesoft.muleesb.modules</groupId>
 			<artifactId>mule-module-batch-ee</artifactId>
 			<version>${mule.version}</version>

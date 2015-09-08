@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule version="EE-3.7.1"
+<mule xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
+	version="EE-3.7.1"
 	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" 
 	xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
 	xmlns:sap="http://www.mulesoft.org/schema/mule/sap" 
@@ -12,7 +13,8 @@
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:json="http://www.mulesoft.org/schema/mule/json"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
+http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
@@ -51,7 +53,6 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 
                         </sap:outbound-endpoint>
                         <dw:transform-message doc:name="BAPI_CUSTOMER_FIND to Customer">
-                            <dw:input-payload doc:sample="empty_1.xml"/>
                             <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
@@ -66,14 +67,14 @@ payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map
                 </enricher>
 
             </batch:step>
-            <batch:step name="getAccountGroupForExistingCustomer" accept-expression="recordVars.sapCustomer != null">
+            <batch:step name="getAccountGroupForExistingCustomer" accept-expression="payload.CustomerNumber != null">
 
                 <enricher source="#[payload.AccountGroup]" target="#[payload.AccountGroup]" doc:name="store 'AccountGroup' to payload" doc:description="Query account group from the SAP by a customer Id. ">
                     <processor-chain doc:name="Processor Chain">
                         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="CUSTOMER_GET_KTOKD" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="get Account Group from SAP">
                             <sap:definition><![CDATA[<CUSTOMER_GET_KTOKD type="function">
 	<import>
-			<IV_KUNNR type="field" sapType="CHAR" sapLength="20">#[recordVars.sapCustomer.Id]</IV_KUNNR>
+			<IV_KUNNR type="field" sapType="CHAR" sapLength="20">#[payload.CustomerNumber]</IV_KUNNR>
 	</import>
 </CUSTOMER_GET_KTOKD>]]></sap:definition>
                         </sap:outbound-endpoint>
@@ -89,7 +90,7 @@ AccountGroup : payload."CUSTOMER_GET_KTOKD".export."EV_KTOKD"
 
 
             </batch:step>
-            <batch:step name="getNewCustomerNumber" accept-expression="recordVars.sapCustomer == null">
+            <batch:step name="getNewCustomerNumber" accept-expression="payload.CustomerNumber == null">
 
                 <enricher source="#[payload.CustomerNumber]" target="#[payload.CustomerNumber]" doc:name="store 'CustomerNumber' to payload" doc:description="If customer account record variable has null payload we need to create new record in SAP and ask for a customer number.">
                     <processor-chain doc:name="Processor Chain">
@@ -119,16 +120,27 @@ AccountGroup : payload."CUSTOMER_GET_KTOKD".export."EV_KTOKD"
 			</batch:step>
 		</batch:process-records>
 		<batch:on-complete>
-			<json:object-to-json-transformer
-				doc:name="transform BatchJobInstance to JSON" />
-			<logger level="INFO" doc:name="log 'Migration process has finished'"
-				message="Migration process has finished: #[payload]" />
+			<scatter-gather doc:name="All">
+				<processor-chain>
+					<json:object-to-json-transformer
+						doc:name="transform BatchJobInstance to JSON" />
+					<logger message="Migration process has finished: #[payload]"
+						level="INFO" doc:name="log 'Migration process has finished'" />
+				</processor-chain>
+				<processor-chain>
+                    <parse-template location="./src/main/resources/email/body.html" doc:name="Parse Template"/>
+
+					<smtp:outbound-endpoint host="${smtp.host}"
+						port="${smtp.port}" user="${smtp.user}" password="${smtp.password}"
+						to="${mail.to}" from="${mail.from}" subject="${mail.subject}"
+						responseTimeout="10000" connector-ref="gmailConnector" doc:name="send mail" />
+				</processor-chain>
+			</scatter-gather>
 		</batch:on-complete>
 	</batch:job>
     <sub-flow name="commitAccountsFlow">
         <logger message="Accounts to update/create: #[payload]" level="INFO" doc:name="log Accounts to update/create"/>
         <dw:transform-message doc:name="Salesforce Account to DEBMAS01">
-            <dw:input-payload doc:sample="empty_2.xml"/>
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/xml
 ---

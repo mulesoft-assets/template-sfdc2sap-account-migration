@@ -37,7 +37,7 @@ The integration is triggered by the HTTP endpoint to fetch all the Salesforce Ac
 Fetched accounts are passed to the batch as input. In the batch the customer is fetched from SAP by its name.
 If it exists, its SAP Account Group is resolved against SAP. If it doesn't exist, then new customer number is fetched from SAP.
 Afterwards every such account from Salesforce is sent to SAP in form of iDoc XML where it is asynchronously updated or created.
-Finally during the On Complete stage the Anypoint Template will log output statistics data into the console.
+Finally during the On Complete stage the Anypoint Template will log output statistics data into the console and send a notification e-mail with the results of the batch execution.
 
 # Considerations <a name="considerations"/>
 
@@ -200,6 +200,19 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + sap.jco.gwhost `your.bpc.server.domain`
 + sap.jco.gwservice `your.gwservice`
 + sap.jco.idoc.programid `idoc_receive`
+
+#### SMTP Services configuration
+
++ smtp.host `smtp.gmail.com`
++ smtp.port `587`
++ smtp.user `email%40example.com`
++ smtp.password `password`
+
+#### Email Details
+
++ mail.from `batch.migrateOpportunities.migration%40mulesoft.com`
++ mail.to `your@email.com`
++ mail.subject `Batch Job Finished Report`
 
 # API Calls <a name="apicalls"/>
 There are no particular considerations for this Anypoint Template regarding API calls
