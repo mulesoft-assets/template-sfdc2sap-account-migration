@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
-	xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:sap="http://www.mulesoft.org/schema/mule/sap" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+<mule version="EE-3.7.1"
+	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" 
+	xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
+	xmlns:sap="http://www.mulesoft.org/schema/mule/sap" 
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
-	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" 
+	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -15,20 +20,18 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd
-http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd">
-    <data-mapper:config name="Salesforce_Account_to_DEBMAS01" transformationGraphPath="salesforce_account_to_debmas01.grf" doc:name="Salesforce_Account_to_DEBMAS01"/>
-    <data-mapper:config name="CUSTOMER_GET_KTOKD_to_KTOKD" transformationGraphPath="customer_get_ktokd_to_ktokd.grf" doc:name="CUSTOMER_GET_KTOKD_to_KTOKD"/>
-    <data-mapper:config name="BAPI_CUSTOMER_FIND_to_Customer" transformationGraphPath="bapi_customer_find_to_customer.grf" doc:name="BAPI_CUSTOMER_FIND_to_Customer"/>
-    <data-mapper:config name="BAPI_CUSTOMER_GETINTNUMBER_to_Customr_Number" transformationGraphPath="bapi_customer_getintnumber_to_customr_number.grf" doc:name="BAPI_CUSTOMER_GETINTNUMBER_to_Customr_Number"/>
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
 	<batch:job name="syncAccountsBatch">
 		<batch:threading-profile poolExhaustedAction="WAIT" />
         <batch:input>
-            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR  Industry = 'Government')" doc:name="query accounts for migration"/>
+            <sfdc:query config-ref="Salesforce" query="dsql:SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE NumberOfEmployees &gt; 9000 AND (Industry = 'Education' OR  Industry = 'Government')" doc:name="query accounts for migration"/>
+
         </batch:input>
 		<batch:process-records>
-            <batch:step name="foreachAccountInSalesforceGetAccountInSap">
-                <enricher source="#[payload.isEmpty() || payload[0]['CustomerNumber'] == null ? NullPayload.getInstance() : payload[0]]" target="#[recordVars['sapCustomer']]" doc:name="store result in record var 'sapCustomer'" doc:description="Query customer from the SAP by a saleforce account name. The query result is stored to the 'sapCustomer' record variable to be processed/enhanced in next batch steps.">
+            <batch:step name="getAccountInSAP">
+                <enricher source="#[payload.isEmpty() ? null : payload[0]['CustomerNumber']]" target="#[payload.CustomerNumber]" doc:name="store 'CustomerNumber' to payload" doc:description="Query customer from the SAP by a saleforce account name. The query result is stored to the 'sapCustomer' record variable to be processed/enhanced in next batch steps.">
                     <processor-chain doc:name="Processor Chain">
+
                         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_FIND" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="get Customer by Name">
                             <sap:definition><![CDATA[<BAPI_CUSTOMER_FIND type="function">
 	<import>
@@ -37,43 +40,58 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
 	</import>
   	<tables>
   	<SELOPT_TAB type="table">
-		<table name="SELOPT_TAB">
 			<row id="0">
-				<TABNAME type="field"
-					sapType="CHAR" sapLength="4">KNA1</TABNAME>
-				<FIELDNAME type="field"
-					sapType="CHAR" sapLength="5">NAME1</FIELDNAME>
-				<FIELDVALUE type="field" 
-					sapType="CHAR" sapLength="20">#[org.apache.commons.lang3.StringEscapeUtils.escapeXml(payload['Name'])]</FIELDVALUE>
+				<TABNAME type="field" sapType="CHAR" sapLength="4">KNA1</TABNAME>
+				<FIELDNAME type="field" sapType="CHAR" sapLength="5">NAME1</FIELDNAME>
+				<FIELDVALUE type="field" sapType="CHAR" sapLength="20">#[org.apache.commons.lang3.StringEscapeUtils.escapeXml(payload.Name)]</FIELDVALUE>
 			</row>
-		</table>
 		</SELOPT_TAB>
 	</tables>
 </BAPI_CUSTOMER_FIND>]]></sap:definition>
+
                         </sap:outbound-endpoint>
-                        <data-mapper:transform config-ref="BAPI_CUSTOMER_FIND_to_Customer" doc:name="BAPI_CUSTOMER_FIND to Customer"/>
+                        <dw:transform-message doc:name="BAPI_CUSTOMER_FIND to Customer">
+                            <dw:input-payload doc:sample="empty_1.xml"/>
+                            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map 
+{
+	(CustomerNumber : $.CUSTOMER) when ($.CUSTOMER != "")
+}
+]]></dw:set-payload>
+                        </dw:transform-message>
+
                     </processor-chain>
                 </enricher>
+
             </batch:step>
-            <batch:step name="forEachAccountInSapGetAccountGroup" accept-expression="!(recordVars['sapCustomer'] is NullPayload)">
-                <enricher source="#[payload['AccountGroup']]" target="#[payload['AccountGroup']]" doc:name="store 'AccountGroup' to payload" doc:description="Query account group from the SAP by a customer Id. ">
+            <batch:step name="getAccountGroupForExistingCustomer" accept-expression="recordVars.sapCustomer != null">
+
+                <enricher source="#[payload.AccountGroup]" target="#[payload.AccountGroup]" doc:name="store 'AccountGroup' to payload" doc:description="Query account group from the SAP by a customer Id. ">
                     <processor-chain doc:name="Processor Chain">
                         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="CUSTOMER_GET_KTOKD" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="get Account Group from SAP">
                             <sap:definition><![CDATA[<CUSTOMER_GET_KTOKD type="function">
 	<import>
-			<IV_KUNNR type="field" sapType="CHAR" sapLength="20">#[recordVars['sapCustomer']['Id']]</IV_KUNNR>
+			<IV_KUNNR type="field" sapType="CHAR" sapLength="20">#[recordVars.sapCustomer.Id]</IV_KUNNR>
 	</import>
 </CUSTOMER_GET_KTOKD>]]></sap:definition>
                         </sap:outbound-endpoint>
-                        <data-mapper:transform config-ref="CUSTOMER_GET_KTOKD_to_KTOKD" doc:name="CUSTOMER_GET_KTOKD to AccountGroup"/>
+                        <dw:transform-message doc:name="CUSTOMER_GET_KTOKD to AccountGroup">
+                            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+AccountGroup : payload."CUSTOMER_GET_KTOKD".export."EV_KTOKD"
+]]></dw:set-payload>
+                        </dw:transform-message>
                     </processor-chain>
                 </enricher>
-                <expression-component doc:name="setup Properties for Update"><![CDATA[payload.put('MessageFunction', '005'); // Replace: This message replaces previous messages
-payload.put('CustomerNumber', recordVars['sapCustomer']['CustomerNumber']);
-]]></expression-component>
+
+
             </batch:step>
-            <batch:step name="forEachNewAccountGetCustomerNumber" accept-expression="recordVars['sapCustomer'] is NullPayload">
-                <enricher source="#[payload['CustomerNumber']]" target="#[payload['CustomerNumber']]" doc:name="store 'CustomerNumber' to payload" doc:description="If customer account record variable has null payload we need to create new record in SAP and ask for a customer number.">
+            <batch:step name="getNewCustomerNumber" accept-expression="recordVars.sapCustomer == null">
+
+                <enricher source="#[payload.CustomerNumber]" target="#[payload.CustomerNumber]" doc:name="store 'CustomerNumber' to payload" doc:description="If customer account record variable has null payload we need to create new record in SAP and ask for a customer number.">
                     <processor-chain doc:name="Processor Chain">
                         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_GETINTNUMBER" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="get Next Customer Number from SAP">
                             <sap:definition><![CDATA[<BAPI_CUSTOMER_GETINTNUMBER type="function">
@@ -83,14 +101,20 @@ payload.put('CustomerNumber', recordVars['sapCustomer']['CustomerNumber']);
 </BAPI_CUSTOMER_GETINTNUMBER>
 ]]></sap:definition>
                         </sap:outbound-endpoint>
-                        <data-mapper:transform config-ref="BAPI_CUSTOMER_GETINTNUMBER_to_Customr_Number" doc:name="BAPI_CUSTOMER_GETINTNUMBER to Customr Number"/>
+                        <dw:transform-message doc:name="BAPI_CUSTOMER_GETINTNUMBER">
+                            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+{
+	CustomerNumber : payload."BAPI_CUSTOMER_GETINTNUMBER".export.CUSTOMERID
+}]]></dw:set-payload>
+                        </dw:transform-message>
                     </processor-chain>
                 </enricher>
-                <expression-component doc:name="setup Properties for Create"><![CDATA[payload.put('MessageFunction', '009'); // Original: First message for process
-payload.put('AccountGroup', '${sap.default.accountGroup}');
-]]></expression-component>
+
+
             </batch:step>
-			<batch:step name="foreachAccountInSalesForceUpsertAccountInSapStep">
+			<batch:step name="upsertAccountToSAP" >
                 <flow-ref name="commitAccountsFlow" doc:name="call commitAccountsFlow"/>
 			</batch:step>
 		</batch:process-records>
@@ -103,7 +127,44 @@ payload.put('AccountGroup', '${sap.default.accountGroup}');
 	</batch:job>
     <sub-flow name="commitAccountsFlow">
         <logger message="Accounts to update/create: #[payload]" level="INFO" doc:name="log Accounts to update/create"/>
-        <data-mapper:transform config-ref="Salesforce_Account_to_DEBMAS01" doc:name="Salesforce Account to DEBMAS01"/>
+        <dw:transform-message doc:name="Salesforce Account to DEBMAS01">
+            <dw:input-payload doc:sample="empty_2.xml"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/xml
+---
+DEBMAS01 : {
+	IDOC @(BEGIN : "1") : {
+		"EDI_DC40" @(SEGMENT : "1"):  {
+			TABNAM      : "EDI_DC40",
+			DIRECT      : "2",
+			IDOCTYP     : "DEBMAS01",
+			MESTYP      : "DEBMAS",
+			SNDPOR      : "MULESOFT",
+			SNDPRT      : "LS",
+			SNDPRN      : "MULESOFT",
+			RCVPOR      : "MULESOFT",
+			RCVPRT      : "LS",
+			RCVPRN      : "MULESOFT"
+		},
+		E1KNA1M @(SEGMENT : "1") : {
+			//setup properties for update or create (005 for update and 009 for create)
+			MSGFN		: "009" 					 when (payload.CustomerNumber == null) otherwise "005",
+			KUNNR		: payload.CustomerNumber,
+			KTOKD		: payload.AccountGroup 		 when (payload.AccountGroup != null) otherwise p('sap.default.accountGroup'),
+			LAND1		: "SK",
+			NAME1		: payload.Name,
+			(ORT01		: payload.BillingCity) 		 when (payload.BillingCity != null),
+			(PSTLZ		: payload.BillingPostalCode) when (payload.BillingPostalCode != null),
+			(STRAS		: payload.BillingStreet) 	 when (payload.BillingStreet != null),
+			(TELF1		: payload.Phone) 			 when (payload.Phone != null),
+			(TELFX		: payload.Fax) 				 when (payload.Fax != null),
+			SPRAS		: "E",
+			"SPRAS_ISO" : "EN"
+		}
+	}
+}]]></dw:set-payload>
+        </dw:transform-message>
+
         <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="idoc" functionName="DEBMAS01" xmlVersion="2" outputXml="true" responseTimeout="10000" doc:name="upsert Customer in SAP"/>
         <logger message="Upsert result: #[payload]" level="INFO" doc:name="log Result"/>
     </sub-flow>

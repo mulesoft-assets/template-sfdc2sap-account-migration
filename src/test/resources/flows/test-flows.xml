@@ -1,57 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sap="http://www.mulesoft.org/schema/mule/sap"
-	xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper"
-	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core"
+<mule version="EE-3.7.1"
+	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:sap="http://www.mulesoft.org/schema/mule/sap" 
+	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
+	xmlns="http://www.mulesoft.org/schema/mule/core" 
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.2"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
-http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
-	<flow name="createAccountsInSapFlow" doc:name="createAccountsInSapFlow">
-		<collection-splitter doc:name="Collection Splitter" />
-		<processor-chain doc:name="Processor Chain">
-			<sap:outbound-endpoint exchange-pattern="request-response"
-				connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_GETINTNUMBER"
-				xmlVersion="2" outputXml="true" evaluateFunctionResponse="true"
-				responseTimeout="10000" doc:name="Get Next Customer Number from SAP">
-                <sap:definition><![CDATA[<BAPI_CUSTOMER_GETINTNUMBER type="function">
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+	<flow name="createAccountsInSapFlow">
+		<foreach doc:name="For Each">
+			<enricher source="#[payload.CustomerNumber]" target="#[payload.CustomerNumber]"
+				doc:name="Save CustomerNumber to payload">
+				<processor-chain doc:name="Processor Chain">
+					<sap:outbound-endpoint exchange-pattern="request-response"
+						connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_GETINTNUMBER"
+						xmlVersion="2" outputXml="true" evaluateFunctionResponse="true"
+						responseTimeout="10000" doc:name="Get Next Customer Number from SAP">
+						<sap:definition><![CDATA[<BAPI_CUSTOMER_GETINTNUMBER type="function">
 	<import>
 			<ACCOUNTGROUP type="field" sapType="CHAR" sapLength="4">ZAG2</ACCOUNTGROUP>
 	</import>
 </BAPI_CUSTOMER_GETINTNUMBER>]]></sap:definition>
-
-			</sap:outbound-endpoint>
-			<data-mapper:transform config-ref="BAPI_CUSTOMER_GETINTNUMBER_to_Customr_Number"
-				doc:name="BAPI_CUSTOMER_GETINTNUMBER to Customr Number" />
-			<expression-component doc:name="Expression"><![CDATA[payload['AccountGroup'] = '${sap.default.accountGroup}';]]></expression-component>
-			<data-mapper:transform config-ref="Salesforce_Account_to_DEBMAS01"
-				doc:name="Salesforce Account to DEBMAS01" />
+					</sap:outbound-endpoint>
+					<dw:transform-message doc:name="Extract Customer Number">
+						<dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+--- 
+{
+	CustomerNumber : payload."BAPI_CUSTOMER_GETINTNUMBER".export.CUSTOMERID
+}
+]]></dw:set-payload>
+					</dw:transform-message>
+				</processor-chain>
+			</enricher>
+			<dw:transform-message doc:name="Salesforce Account to DEBMAS01">
+				<dw:set-payload><![CDATA[%dw 1.0
+%output application/xml
+---
+DEBMAS01 : {
+	IDOC @(BEGIN : "1") : {
+		"EDI_DC40" @(SEGMENT : "1"):  {
+			TABNAM      : "EDI_DC40",
+			DIRECT      : "2",
+			IDOCTYP     : "DEBMAS01",
+			MESTYP      : "DEBMAS",
+			SNDPOR      : "MULESOFT",
+			SNDPRT      : "LS",
+			SNDPRN      : "MULESOFT",
+			RCVPOR      : "MULESOFT",
+			RCVPRT      : "LS",
+			RCVPRN      : "MULESOFT"
+		},
+		E1KNA1M @(SEGMENT : "1") : {
+			MSGFN       : "009",
+			KUNNR       : payload.CustomerNumber,
+			KTOKD       : p('sap.default.accountGroup'),
+			LAND1       : "SK",
+			NAME1       : payload.Name,
+			(ORT01      : payload.BillingCity)       when (payload.BillingCity != null),
+			(PSTLZ      : payload.BillingPostalCode) when (payload.BillingPostalCode != null),
+			(STRAS      : payload.BillingStreet)     when (payload.BillingStreet != null),
+			(TELF1      : payload.Phone)             when (payload.Phone != null),
+			(TELFX      : payload.Fax)               when (payload.Fax != null),
+			SPRAS       : "E",
+			"SPRAS_ISO" : "EN"
+		}
+	}
+}]]></dw:set-payload>
+			</dw:transform-message>
 			<sap:outbound-endpoint exchange-pattern="request-response"
 				connector-ref="SAP" type="idoc" functionName="DEBMAS01" xmlVersion="2"
-				outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000"
+				outputXml="true"  responseTimeout="10000"
 				doc:name="Create Customer in SAP" />
-		</processor-chain>
-		<collection-aggregator failOnTimeout="true"
-			doc:name="Collection Aggregator" />
+            <logger message="SAP customer created: #[payload]" level="INFO" doc:name="Logger"/>
+		</foreach>
 	</flow>
 
-	<flow name="createAccountsInSalesforceFlow" doc:name="createAccountsInSalesforceFlow">
+	<flow name="createAccountsInSalesforceFlow">
 		<sfdc:create config-ref="Salesforce" type="Account"
 			doc:name="Salesforce">
 			<sfdc:objects ref="#[payload]" />
 		</sfdc:create>
 	</flow>
-	<sub-flow name="retrieveAccountFromSapFlow" doc:name="retrieveAccountFromSapFlow">
+	<sub-flow name="retrieveAccountFromSapFlow">
 		<sap:outbound-endpoint exchange-pattern="request-response"
 			connector-ref="SAP" type="function" functionName="BAPI_CUSTOMER_FIND"
 			xmlVersion="2" outputXml="true" evaluateFunctionResponse="true"
 			responseTimeout="10000" doc:name="Find Customers in SAP">
-            <sap:definition><![CDATA[<BAPI_CUSTOMER_FIND type="function">
+			<sap:definition><![CDATA[<BAPI_CUSTOMER_FIND type="function">
 	<import>
 		<MAX_CNT type="field" sapType="INT">0</MAX_CNT>
 		<PL_HOLD type="field" sapType="CHAR" sapLength="1">X</PL_HOLD>
@@ -74,23 +118,34 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 ]]></sap:definition>
 
 		</sap:outbound-endpoint>
-		<data-mapper:transform config-ref="BAPI_CUSTOMER_FIND_to_Customer"
-			doc:name="BAPI_CUSTOMER_FIND to Customer" />
+		<dw:transform-message doc:name="BAPI_CUSTOMER_FIND to Customer">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map 
+{
+	CustomerNumber  : $.CUSTOMER when $.CUSTOMER != "" otherwise null,
+	Name            : $.FIELDVALUE		
+}
+]]></dw:set-payload>
+		</dw:transform-message>
 	</sub-flow>
-	<sub-flow name="deleteAccountsFromSapFlow" doc:name="deleteAccountsFromSapFlow">
+	<sub-flow name="deleteAccountsFromSapFlow">
 		<foreach doc:name="For Each">
-            <sap:outbound-endpoint exchange-pattern="request-response" connector-ref="SAP" type="function" functionName="ZMULE_CUSTOMER_DELETE" xmlVersion="2" outputXml="true" evaluateFunctionResponse="true" responseTimeout="10000" doc:name="Delete Customer from SAP">
-                <sap:definition><![CDATA[<ZMULE_CUSTOMER_DELETE type="function">
+			<sap:outbound-endpoint exchange-pattern="request-response"
+				connector-ref="SAP" type="function" functionName="ZMULE_CUSTOMER_DELETE"
+				xmlVersion="2" outputXml="true" evaluateFunctionResponse="true"
+				responseTimeout="10000" doc:name="Delete Customer from SAP">
+				<sap:definition><![CDATA[<ZMULE_CUSTOMER_DELETE type="function">
 	<import>
 			<I_CUSTOMER type="field">#[payload]</I_CUSTOMER>
 	</import>
 </ZMULE_CUSTOMER_DELETE>
 ]]></sap:definition>
-
-            </sap:outbound-endpoint>
+			</sap:outbound-endpoint>
 		</foreach>
 	</sub-flow>
-	<sub-flow name="deleteAccountsFromSalesforceFlow" doc:name="deleteAccountsFromSalesforceFlow">
+	<sub-flow name="deleteAccountsFromSalesforceFlow">
 		<sfdc:delete config-ref="Salesforce" doc:name="Salesforce">
 			<sfdc:ids ref="#[payload]" />
 		</sfdc:delete>

@@ -28,12 +28,12 @@ Please review the terms of the license before downloading and using this templat
 # Use Case <a name="usecase"/>
 This Anypoint Template should serve as a foundation for setting an online sync of accounts/customers from Salesforce to SAP.
 
-Use this template if would like to sync accounts from Salesforce to SAP customers in manner one time synchronization hitting the HTTP endpoint. The template will fetch all accounts by	specified criteria and send it as IDoc to SAP to create/update customer there.
+Use this template if would like to sync accounts from Salesforce to SAP customers in manner of one time synchronization by hitting the HTTP endpoint. The template will fetch all accounts by specified criteria and send it as IDoc to SAP to create/update customer there.
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
-As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
-The batch job is divided in Input, Process and On Complete stages.
-The integration is triggered by the HTTP endpoint to fetch all Salesforce Accounts suitable for migration.
+As implemented, this Anypoint Template leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+The batch job is divided into Input, Process and On Complete stages.
+The integration is triggered by the HTTP endpoint to fetch all the Salesforce Accounts suitable for migration.
 Fetched accounts are passed to the batch as input. In the batch the customer is fetched from SAP by its name.
 If it exists, its SAP Account Group is resolved against SAP. If it doesn't exist, then new customer number is fetched from SAP.
 Afterwards every such account from Salesforce is sent to SAP in form of iDoc XML where it is asynchronously updated or created.
@@ -44,7 +44,7 @@ Finally during the On Complete stage the Anypoint Template will log output stati
 To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both, that must be made in order for all to run smoothly.
 **Failling to do so could lead to unexpected behavior of the template.**
 
-Before continue with the use of this Anypoint Template, you may want to check out this [Documentation Page](http://www.mulesoft.org/documentation/display/current/SAP+Connector#SAPConnector-EnablingYourStudioProjectforSAP), that will teach you how to work 
+Before using this Anypoint Template, you may want to check out this [Documentation Page](http://www.mulesoft.org/documentation/display/current/SAP+Connector#SAPConnector-EnablingYourStudioProjectforSAP), that will teach you how to work 
 with SAP and Anypoint Studio.
 
 ## Disclaimer
@@ -107,6 +107,10 @@ column='486'
 
 
 
+
+
+
+
 # Run it! <a name="runit"/>
 Simple steps to get Salesforce to SAP Account Migration running.
 In any of the ways you would like to run this Template this is an example of the output you'll see after hitting the HTTP endpoint:
@@ -115,7 +119,7 @@ In any of the ways you would like to run this Template this is an example of the
 <h1>Batch Process initiated</h1>
 <b>ID:</b>6eea3cc6-7c96-11e3-9a65-55f9f3ae584e<br/>
 <b>Records to Be Processed: </b>9<br/>
-<b>Start execution on: </b>Mon Jan 13 18:05:33 GMT-03:00 2014
+<b>Start execution on: </b>Mon Sep 08 15:05:33 GMT-03:00 2015
 </pre>
 
 ## Running on premise <a name="runonopremise"/>
@@ -148,7 +152,7 @@ Once you have imported you Anypoint Template into Anypoint Studio you need to fo
 + Once that is done, right click on you Anypoint Template project folder 
 + Hover you mouse over `"Run as"`
 + Click on  `"Mule Application"`
-In order to make this Anypoint Template run on Mule Studio there are a few extra steps that needs to be made.
+In order to make this Anypoint Template run on Anypoint Studio there are a few extra steps that needs to be made.
 Please check this Documentation Page:
 
 + [Enabling Your Studio Project for SAP](http://www.mulesoft.org/documentation/display/current/SAP+Connector#SAPConnector-EnablingYourStudioProjectforSAP)
@@ -179,7 +183,7 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + sfdc.username `bob.dylan@sfdc`
 + sfdc.password `DylanPassword123`
 + sfdc.securityToken `avsfwCUl7apQs56Xq2AKi3X`
-+ sfdc.url `https://test.salesforce.com/services/Soap/u/28.0`
++ sfdc.url `https://test.salesforce.com/services/Soap/u/32.0`
 
 **SAP Connector configuration**
 
