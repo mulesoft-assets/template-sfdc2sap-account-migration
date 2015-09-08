@@ -10,9 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,6 +47,7 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 	private static final String KEY_INDUSTRY = "Industry";
 	
 	private static final String TEMPLATE_NAME = "sf2sa";
+	private static final Logger LOGGER = LogManager.getLogger(BusinessLogicIT.class);
 	
 	private SubflowInterceptingChainLifecycleWrapper retrieveAccountFromSapFlow;
 	private SubflowInterceptingChainLifecycleWrapper deleteAccountFromSalesforceFlow;
@@ -136,14 +138,14 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 		// This account should be synced
 		Map<String, Object> sfdcAccount0 = new HashMap<String, Object>();
 		sfdcAccount0.put(KEY_NAME, "Name_0_SFDC" + uniqueSuffix);
-		sfdcAccount0.put(KEY_NUMBER_OF_EMPLOYEES, 6000);
+		sfdcAccount0.put(KEY_NUMBER_OF_EMPLOYEES, 10000);
 		sfdcAccount0.put(KEY_INDUSTRY, "Education");
 		createdAccountsInSalesforce.add(sfdcAccount0);
 				
 		// This account should be synced (update)
 		Map<String, Object> sfdcAccount1 = new HashMap<String, Object>();
 		sfdcAccount1.put(KEY_NAME,  sapAccount3.get(KEY_NAME));
-		sfdcAccount1.put(KEY_NUMBER_OF_EMPLOYEES, 7100);
+		sfdcAccount1.put(KEY_NUMBER_OF_EMPLOYEES, 11000);
 		sfdcAccount1.put(KEY_INDUSTRY, "Government");
 		createdAccountsInSalesforce.add(sfdcAccount1);
 
@@ -162,7 +164,7 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 			createdAccountsInSalesforce.get(i).put(KEY_ID, ((SaveResult) results.get(i)).getId());
 		}
 
-		System.out.println("Results after adding: " + createdAccountsInSalesforce.toString());
+		LOGGER.info("Results after adding: " + createdAccountsInSalesforce.toString());
 	}
 
 	/**
