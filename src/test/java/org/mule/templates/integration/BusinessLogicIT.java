@@ -88,9 +88,10 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 		helper.awaitJobTermination(TIMEOUT_SECONDS * 1000, 500);
 		helper.assertJobWasSuccessful();
 	
-		// cut the account 0 name to 20 chars
-		Map<String,Object> sfdcNewAcc = createdAccountsInSalesforce.get(0);
-		sfdcNewAcc.put(KEY_NAME, ((String)sfdcNewAcc.get(KEY_NAME)).substring(0,20));
+		// cut the account 0 name to 20 chars if required
+		String sfdcAcc0Name = (String) createdAccountsInSalesforce.get(0).get(KEY_NAME);
+		sfdcAcc0Name = (sfdcAcc0Name.length() > 20) ? sfdcAcc0Name.substring(0,20) : sfdcAcc0Name;
+		createdAccountsInSalesforce.get(0).put(KEY_NAME, sfdcAcc0Name);
 		
 		Map<String, Object> payload0 = invokeRetrieveFlow(retrieveAccountFromSapFlow, createdAccountsInSalesforce.get(0));
 		Assert.assertNotNull("The account 0 should have been sync but is null", payload0);
