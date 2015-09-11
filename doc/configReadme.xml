@@ -43,6 +43,9 @@ You will find that there are three dependencies in the pom.xml file that begin w
 These dependencies are private for Mulesoft and will cause you application not to build from a Maven command line. You need to replace them with "provided" scope and copy the libraries into the build path.
 		]]>
 		</section>
+		<section id="sap_dst">
+		There is limitation on maximum length of Customer name in SAP. Therefore this template strips off all Account Name characters beyond 20.
+		</section>
 		<section id="run_it">
 		<![CDATA[
 In any of the ways you would like to run this Template this is an example of the output you'll see after hitting the HTTP endpoint:
