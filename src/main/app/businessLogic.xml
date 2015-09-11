@@ -45,7 +45,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 			<row id="0">
 				<TABNAME type="field" sapType="CHAR" sapLength="4">KNA1</TABNAME>
 				<FIELDNAME type="field" sapType="CHAR" sapLength="5">NAME1</FIELDNAME>
-				<FIELDVALUE type="field" sapType="CHAR" sapLength="20">#[org.apache.commons.lang3.StringEscapeUtils.escapeXml(payload.Name)]</FIELDVALUE>
+				<FIELDVALUE type="field" sapType="CHAR" sapLength="20">#[org.apache.commons.lang3.StringEscapeUtils.escapeXml(payload.Name.length() > 20 ? payload.Name.substring(0,20) : payload.Name)]</FIELDVALUE>
 			</row>
 		</SELOPT_TAB>
 	</tables>
@@ -160,17 +160,17 @@ DEBMAS01 : {
 		},
 		E1KNA1M @(SEGMENT : "1") : {
 			//setup properties for update or create (005 for update and 009 for create)
-			MSGFN		: "009" 					 when (payload.CustomerNumber == null) otherwise "005",
-			KUNNR		: payload.CustomerNumber,
-			KTOKD		: payload.AccountGroup 		 when (payload.AccountGroup != null) otherwise p('sap.default.accountGroup'),
-			LAND1		: "SK",
-			NAME1		: payload.Name,
-			(ORT01		: payload.BillingCity) 		 when (payload.BillingCity != null),
-			(PSTLZ		: payload.BillingPostalCode) when (payload.BillingPostalCode != null),
-			(STRAS		: payload.BillingStreet) 	 when (payload.BillingStreet != null),
-			(TELF1		: payload.Phone) 			 when (payload.Phone != null),
-			(TELFX		: payload.Fax) 				 when (payload.Fax != null),
-			SPRAS		: "E",
+			MSGFN       : "009"                      when (payload.CustomerNumber == null) otherwise "005",
+			KUNNR       : payload.CustomerNumber,
+			KTOKD       : payload.AccountGroup       when (payload.AccountGroup != null)   otherwise p('sap.default.accountGroup'),
+			LAND1       : "SK",
+			NAME1       : payload.Name               when ((sizeOf payload.Name) <= 20)    otherwise payload.Name[0..19],
+			(ORT01      : payload.BillingCity)       when (payload.BillingCity != null),
+			(PSTLZ      : payload.BillingPostalCode) when (payload.BillingPostalCode != null),
+			(STRAS      : payload.BillingStreet)     when (payload.BillingStreet != null),
+			(TELF1      : payload.Phone)             when (payload.Phone != null),
+			(TELF       : payload.Fax)               when (payload.Fax != null),
+			SPRAS       : "E",
 			"SPRAS_ISO" : "EN"
 		}
 	}

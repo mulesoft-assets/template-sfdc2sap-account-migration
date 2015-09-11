@@ -109,7 +109,7 @@ DEBMAS01 : {
 				<FIELDNAME type="field" 
 					sapType="CHAR" sapLength="5">NAME1</FIELDNAME>
 				<FIELDVALUE type="field" 
-					sapType="CHAR" sapLength="20">#[org.apache.commons.lang3.StringEscapeUtils.escapeXml(payload['Name'])]</FIELDVALUE>
+					sapType="CHAR" sapLength="20">#[org.apache.commons.lang3.StringEscapeUtils.escapeXml(payload.Name.length() > 20 ? payload.Name.substring(0,20) : payload.Name)]</FIELDVALUE>
 			</row>
 		</table>
 		</SELOPT_TAB>

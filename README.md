@@ -63,7 +63,7 @@ There may be a few things that you need to know regarding SAP, in order for this
 
 ### As destination of data
 
-There are no particular considerations for this Anypoint Template regarding Sap as data destination.
+There is limitation on maximum length of Customer name in SAP. Therefore this template strips off all Account Name characters beyond 20.
 ## Salesforce Considerations <a name="salesforceconsiderations"/>
 
 There may be a few things that you need to know regarding Salesforce, in order for this template to work.
