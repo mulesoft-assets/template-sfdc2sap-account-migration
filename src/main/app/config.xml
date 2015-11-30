@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule version="EE-3.7.1"
+<mule 
 	xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
 	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" 
 	xmlns:sap="http://www.mulesoft.org/schema/mule/sap"
@@ -33,7 +33,7 @@ http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfd
 
 	<sfdc:config name="Salesforce" username="${sfdc.username}"
 		password="${sfdc.password}" securityToken="${sfdc.securityToken}" url="${sfdc.url}"
-		doc:name="Salesforce">
+		doc:name="Salesforce" disableSessionInvalidation="true">
 	</sfdc:config>
 
 </mule>
