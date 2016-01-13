@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mule xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
-	version="EE-3.7.1"
+	
 	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" 
 	xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
 	xmlns:sap="http://www.mulesoft.org/schema/mule/sap" 
@@ -128,7 +128,7 @@ AccountGroup : payload."CUSTOMER_GET_KTOKD".export."EV_KTOKD"
 						level="INFO" doc:name="log 'Migration process has finished'" />
 				</processor-chain>
 				<processor-chain>
-                    <parse-template location="./src/main/resources/email/body.html" doc:name="Parse Template"/>
+                    <parse-template location="email/body.html" doc:name="Parse Template"/>
 
 					<smtp:outbound-endpoint host="${smtp.host}"
 						port="${smtp.port}" user="${smtp.user}" password="${smtp.password}"
