@@ -52,12 +52,12 @@ DEBMAS01 : {
 			DIRECT      : "2",
 			IDOCTYP     : "DEBMAS01",
 			MESTYP      : "DEBMAS",
-			SNDPOR      : "MULESOFT",
+			SNDPOR      : "MULE01_LS",
 			SNDPRT      : "LS",
-			SNDPRN      : "MULESOFT",
-			RCVPOR      : "MULESOFT",
+			SNDPRN      : "MULE01_LS",
+			RCVPOR      : "T90CLNT090",
 			RCVPRT      : "LS",
-			RCVPRN      : "MULESOFT"
+			RCVPRN      : "T90CLNT090"
 		},
 		E1KNA1M @(SEGMENT : "1") : {
 			MSGFN       : "009",
