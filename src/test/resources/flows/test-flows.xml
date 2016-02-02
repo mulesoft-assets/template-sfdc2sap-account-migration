@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule version="EE-3.7.1"
+<mule 
 	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
 	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
 	xmlns:sap="http://www.mulesoft.org/schema/mule/sap" 
@@ -26,7 +26,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 						responseTimeout="10000" doc:name="Get Next Customer Number from SAP">
 						<sap:definition><![CDATA[<BAPI_CUSTOMER_GETINTNUMBER type="function">
 	<import>
-			<ACCOUNTGROUP type="field" sapType="CHAR" sapLength="4">ZAG2</ACCOUNTGROUP>
+			<ACCOUNTGROUP type="field" sapType="CHAR" sapLength="4">ZAG1</ACCOUNTGROUP>
 	</import>
 </BAPI_CUSTOMER_GETINTNUMBER>]]></sap:definition>
 					</sap:outbound-endpoint>
@@ -133,14 +133,14 @@ payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map
 	<sub-flow name="deleteAccountsFromSapFlow">
 		<foreach doc:name="For Each">
 			<sap:outbound-endpoint exchange-pattern="request-response"
-				connector-ref="SAP" type="function" functionName="ZMULE_CUSTOMER_DELETE"
+				connector-ref="SAP" type="function" functionName="ZCAFM_CUSTOMER_DELETE"
 				xmlVersion="2" outputXml="true" evaluateFunctionResponse="true"
 				responseTimeout="10000" doc:name="Delete Customer from SAP">
-				<sap:definition><![CDATA[<ZMULE_CUSTOMER_DELETE type="function">
+				<sap:definition><![CDATA[<ZCAFM_CUSTOMER_DELETE type="function">
 	<import>
-			<I_CUSTOMER type="field">#[payload]</I_CUSTOMER>
+			<PI_CUSTOMER type="field">#[payload]</PI_CUSTOMER>
 	</import>
-</ZMULE_CUSTOMER_DELETE>
+</ZCAFM_CUSTOMER_DELETE>
 ]]></sap:definition>
 			</sap:outbound-endpoint>
 		</foreach>
