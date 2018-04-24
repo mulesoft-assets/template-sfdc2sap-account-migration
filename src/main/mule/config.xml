@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:sap="http://www.mulesoft.org/schema/mule/sap"
-	xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<mule xmlns:sap="http://www.mulesoft.org/schema/mule/sap" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd 
 http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
@@ -13,41 +11,30 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd">
 
-	<http:listener-config name="HTTP_Listener_config"
-		doc:name="HTTP Listener config" doc:id="910654bf-9fd9-4073-bad4-cf951b7f0022">
-		<http:listener-connection host="0.0.0.0"
-			port="${http.port}" />
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="910654bf-9fd9-4073-bad4-cf951b7f0022">
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
 	</http:listener-config>
-	<salesforce:sfdc-config name="Salesforce_Sfdc_config"
-		doc:name="Salesforce Sfdc config" doc:id="38a0808d-8f32-4c87-a763-4db431b3c4cd">
-		<salesforce:basic-connection username="${sfdc.username}"
-			password="${sfdc.password}" securityToken="${sfdc.securityToken}" />
+	<salesforce:sfdc-config name="Salesforce_Sfdc_config" doc:name="Salesforce Sfdc config" doc:id="38a0808d-8f32-4c87-a763-4db431b3c4cd">
+		<salesforce:basic-connection username="${sfdc.username}" password="${sfdc.password}" securityToken="${sfdc.securityToken}" />
 	</salesforce:sfdc-config>
 
-	<email:smtp-config name="Gmail_SMTP" doc:name="Email SMTP"
-		doc:id="8ba14ccd-a5b8-43a8-8281-cd433c852f2b">
-		<email:smtps-connection host="${smtp.host}"
-			port="${smtp.port}" user="${smtp.user}" password="${smtp.password}"
+	<email:smtp-config name="Gmail_SMTP" doc:name="Email SMTP" doc:id="8ba14ccd-a5b8-43a8-8281-cd433c852f2b">
+		<email:smtps-connection host="${smtp.host}" port="${smtp.port}" user="${smtp.user}" password="${smtp.password}"
 			tlsContext="TLS_Context" />
 	</email:smtp-config>
 
-	<tls:context name="TLS_Context" doc:name="TLS Context"
-		doc:id="233e532c-8296-4ddd-ac67-e2b7984b3609">
+	<tls:context name="TLS_Context" doc:name="TLS Context" doc:id="233e532c-8296-4ddd-ac67-e2b7984b3609">
 		<tls:trust-store insecure="true" />
 	</tls:context>
-	<configuration-properties file="mule.${mule.env}.properties"
-		doc:name="Configuration properties" doc:id="46877740-aac5-4812-8728-4718689aa9ec" />
-	<configuration-properties file="common.properties"
-		doc:name="Configuration properties" doc:id="dffa4da7-cc5c-4ecb-922e-1115b4387354" />
-	<configuration-properties doc:name="Configuration properties"
-		doc:id="d185e6c2-8ca4-4217-928b-a845563af693" file="mule-artifact.properties" />
-	<sap:outbound-config name="SAP_Outbound" doc:name="SAP Outbound"
-		doc:id="43be7098-d38d-49a2-ad62-08b9dad4a57c">
-		<sap:simple-connection-provider-connection
-			applicationServerHost="${sap.jco.ashost}" username="${sap.jco.user}"
-			password="${sap.jco.passwd}" systemNumber="${sap.jco.sysnr}" client="${sap.jco.client}"
-			language="${sap.jco.lang}" />
+
+	<sap:outbound-config name="SAP_Outbound" doc:name="SAP Outbound" doc:id="43be7098-d38d-49a2-ad62-08b9dad4a57c">
+		<sap:simple-connection-provider-connection applicationServerHost="${sap.jco.ashost}" username="${sap.jco.user}"
+			password="${sap.jco.passwd}" systemNumber="${sap.jco.sysnr}" client="${sap.jco.client}" language="${sap.jco.lang}" />
 	</sap:outbound-config>
+
+	<configuration-properties file="mule.${mule.env}.properties" doc:name="Configuration properties" doc:id="46877740-aac5-4812-8728-4718689aa9ec" />
+	<configuration-properties file="common.properties" doc:name="Configuration properties" doc:id="dffa4da7-cc5c-4ecb-922e-1115b4387354" />
+	<configuration-properties doc:name="Configuration properties" doc:id="d185e6c2-8ca4-4217-928b-a845563af693" file="mule-artifact.properties" />
 </mule>
 
 

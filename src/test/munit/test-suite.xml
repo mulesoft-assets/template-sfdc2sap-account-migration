@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sap="http://www.mulesoft.org/schema/mule/sap" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd">
+	<munit:config name="test-suite.xml" />
+
+	<configuration-properties doc:name="Configuration properties" doc:id="c382dc50-b83c-41be-ad31-42ccb929d758" file="mule.test.properties" />
+	<configuration-properties doc:name="Configuration properties" doc:id="59fef852-f885-4b1e-baac-96bce830be9f" file="mule-artifact.properties" />
+	<configuration-properties doc:name="Configuration properties" doc:id="a0f29785-69a4-48b7-8ef5-410c95ee7ff2" file="common.properties" />
+
+	<munit:before-test name="test-suiteBefore_Test" description="Before tests actions" doc:id="7f8facb1-95ae-4456-9448-faf3a3a89dc9">
+		<flow-ref doc:name="Get test record from SAP" doc:id="1ae203be-dbee-4a45-bf16-d5c2755bb00e" name="getTestRecordFromSAP"/>
+		<ee:transform doc:name="Prepare testing data for Salesforce" doc:id="7c253cc1-4a09-4e71-a9c5-74e5dbbf5848">
+			<ee:message>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="accounts" ><![CDATA[%dw 2.0
+output application/java
+---
+vars.customerSAP ++ 
+[
+{
+	Description: "test description2",
+	Name: "TestName" ++ randomInt(1000),
+	Industry: "Energy",
+	NumberOfEmployees: 100
+}
+]]]></ee:set-variable>
+			</ee:variables>
+		
+</ee:transform>
+		<salesforce:create type="Account" doc:name="Create Accounts in Salesforce" doc:id="d62c8e61-71a7-43f3-8aa0-b4b5cb5359a4"
+			config-ref="Salesforce_Sfdc_config" >
+			<salesforce:records ><![CDATA[#[vars.accounts]]]></salesforce:records>
+		</salesforce:create>
+		<set-variable value="#[payload map ($.id)]" doc:name="Store IDs to variable sfdcIds" doc:id="623a0d4f-c873-45e6-a7ee-89bc1e194721"
+			variableName="sfdcIds" />
+		<munit-tools:mock-when doc:name="Mock email processor to avoid sending email" doc:id="17ab3357-3f08-4456-9f14-c41c281e06f1"
+			processor="email:send">
+			<munit-tools:then-return />
+		</munit-tools:mock-when>
+	</munit:before-test>
+	<munit:test name="test-suite-businesslogicFlowTest" description="Test" doc:id="4ffcda90-21bf-4cd4-9460-09cf6ca578e5">
+		<munit:execution>
+			<flow-ref doc:name="businessLogicFlow" doc:id="3e0601a1-1b47-4974-83b0-8d30726559dd" name="businessLogicFlow" />
+			<scripting:execute doc:name="Sleep for 10s until the processing is completed" doc:id="b09fe305-3000-4571-b824-8b555395ccb7"
+				engine="groovy">
+				<scripting:code>sleep(10000)</scripting:code>
+			</scripting:execute>
+			<flow-ref doc:name="Check Customer should be migrated to SAP" doc:id="a562a9af-0f0f-400a-a596-66a71ba66563" name="checkMigratedRecord"/>
+			<flow-ref doc:name="Check Customer shouldn't be migrated to SAP" doc:id="71d373ad-8d70-4ff8-be69-09d5b437b669" name="checkNotMigratedRecord"/>
+		
+</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="d169a8c9-05fa-410f-bf1f-679ac50991ea" processor="sap:send"
+				times="1" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="1a1f6fdf-7250-49b2-80cf-925d6a6512bc" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:after-test name="test-suiteAfter_Test" description="After tests actions" doc:id="5b85bb9e-67e6-47f7-8f71-53a39f147fc8">
+		<salesforce:delete doc:name="Delete source Accounts from Salesforce" doc:id="788956ca-8ada-49c2-a3f7-7eb367e735b4" config-ref="Salesforce_Sfdc_config">
+			<salesforce:delete-ids><![CDATA[#[vars.sfdcIds]]]></salesforce:delete-ids>
+		</salesforce:delete>
+	</munit:after-test>
+	<flow name="getTestRecordFromSAP" doc:id="1d939219-9a6f-46fd-b914-401d51db443e">
+		<ee:transform doc:name="Set SAP input" doc:id="f2c86d02-e441-43e4-bc7f-964f86383a79">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+  "BAPI_CUSTOMER_FIND": {
+    "import": {
+      "MAX_CNT": "0",
+      "PL_HOLD": "X"
+    },
+    "tables": {
+      "SELOPT_TAB": {
+        "row": {
+          "TABNAME": "KNA1",
+          "FIELDNAME": "NAME1",
+          "FIELDVALUE": p('test.sap.name')
+        }
+      }
+    }
+  }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<sap:execute-synchronous-remote-function-call key="BAPI_CUSTOMER_FIND" doc:name="Get Customer by Name" doc:id="3c88c1e6-cb34-41c8-9a55-cdf64ccc601b" config-ref="SAP_Outbound" />
+		<ee:transform doc:name="Prepare test record from SAP" doc:id="aa51a03d-1681-4ad1-a3b2-4f357f19f39d">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="customerSAP"><![CDATA[%dw 2.0
+output application/java
+---
+payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map 
+{
+	Name: $.FIELDVALUE,
+	Description: "test description1",
+	Industry: "Education",
+	NumberOfEmployees: 15001
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+	<flow name="checkMigratedRecord" doc:id="bc897ec0-eb75-4949-9e7d-a090eb013963">
+		<ee:transform doc:name="Set SAP input" doc:id="f2c86d02-e441-43e4-bc7f-964f86383a79">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+  "BAPI_CUSTOMER_FIND": {
+    "import": {
+      "MAX_CNT": "0",
+      "PL_HOLD": "X"
+    },
+    "tables": {
+      "SELOPT_TAB": {
+        "row": {
+          "TABNAME": "KNA1",
+          "FIELDNAME": "NAME1"  ,
+          "FIELDVALUE": vars.accounts[0].Name
+        }
+      }
+    }
+  }
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+		<sap:execute-synchronous-remote-function-call doc:name="Get Customer by Name" doc:id="3c88c1e6-cb34-41c8-9a55-cdf64ccc601b" config-ref="SAP_Outbound" key="BAPI_CUSTOMER_FIND">
+		</sap:execute-synchronous-remote-function-call>
+		<ee:transform doc:name="Transform result from SAP" doc:id="aa51a03d-1681-4ad1-a3b2-4f357f19f39d">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map 
+{
+	Name: $.FIELDVALUE,
+	CustomerNumber : $.CUSTOMER
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		<munit-tools:assert-that doc:name="Assert that we found migrated Customer" doc:id="d16c64d6-846c-4a40-80ac-d8853ddcf430" is="#[MunitTools::notNullValue()]" expression="#[payload[0].CustomerNumber]" />
+	</flow>
+	<flow name="checkNotMigratedRecord" doc:id="bc897ec0-eb75-4949-9e7d-a090eb013963">
+		<ee:transform doc:name="Set SAP input" doc:id="f2c86d02-e441-43e4-bc7f-964f86383a79">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+  "BAPI_CUSTOMER_FIND": {
+    "import": {
+      "MAX_CNT": "0",
+      "PL_HOLD": "X"
+    },
+    "tables": {
+      "SELOPT_TAB": {
+        "row": {
+          "TABNAME": "KNA1",
+          "FIELDNAME": "NAME1",
+          "FIELDVALUE": vars.accounts[1].Name
+        }
+      }
+    }
+  }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<sap:execute-synchronous-remote-function-call key="BAPI_CUSTOMER_FIND" doc:name="Get Customer by Name" doc:id="3c88c1e6-cb34-41c8-9a55-cdf64ccc601b" config-ref="SAP_Outbound" />
+		<ee:transform doc:name="Transform result from SAP" doc:id="aa51a03d-1681-4ad1-a3b2-4f357f19f39d">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map 
+{
+	Name: $.FIELDVALUE,
+	CustomerNumber : $.CUSTOMER
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<munit-tools:assert-that doc:name="Assert that we didn't find Customer" doc:id="22be64b5-c8b7-477f-a3fc-9522350fbf5a" expression="#[payload[0].CustomerNumber]" is="#[MunitTools::nullValue()]" />
+	</flow>
+
+</mule>

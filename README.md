@@ -32,17 +32,17 @@ Use this template if would like to sync accounts from Salesforce to SAP customer
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
 As implemented, this Anypoint Template leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
-The batch job is divided into Process and On Complete stages.
+The batch job is divided into *Process* and *On Complete* stages.
 The integration is triggered by the HTTP endpoint to fetch all the Salesforce Accounts suitable for migration.
 Fetched accounts are passed to the batch as input. In the batch the customer is fetched from SAP by its name.
 If it exists, its SAP Account Group is resolved against SAP. If it doesn't exist, then new customer number is fetched from SAP.
 Afterwards every such account from Salesforce is sent to SAP in form of iDoc XML where it is asynchronously updated or created.
-Finally during the On Complete stage the Anypoint Template will log output statistics data into the console and send a notification e-mail with the results of the batch execution.
+Finally during the *On Complete* stage the Anypoint Template will log output statistics data into the console and send a notification e-mail with the results of the batch execution.
 
 # Considerations <a name="considerations"/>
 
 To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both, that must be made in order for all to run smoothly.
-**Failling to do so could lead to unexpected behavior of the template.**
+**Failing to do so could lead to unexpected behavior of the template.**
 
 Before using this Anypoint Template, you may want to check out this [Documentation Page](http://www.mulesoft.org/documentation/display/current/SAP+Connector#SAPConnector-EnablingYourStudioProjectforSAP), that will teach you how to work 
 with SAP and Anypoint Studio.
@@ -110,13 +110,7 @@ column='486'
 
 # Run it! <a name="runit"/>
 Simple steps to get Salesforce to SAP Account Migration running.
-In any of the ways you would like to run this Template this is an example of the output you'll see after hitting the HTTP endpoint:
-	{
-	  "Message": "Batch Process initiated",
-	  "ID": "7fc674b0-e4b7-11e7-9627-100ba905a441",
-	  "RecordCount": 32,
-	  "StartExecutionOn": "2017-12-19T13:24:03Z"
-	}
+
 
 ## Running on premise <a name="runonopremise"/>
 In this section we detail the way you should run your Anypoint Template on your computer.
@@ -132,10 +126,8 @@ First thing to know if you are a newcomer to Mule is where to get the tools.
 ### Importing an Anypoint Template into Studio
 Mule Studio offers several ways to import a project into the workspace, for instance: 
 
-+ Anypoint Studio generated Deployable Archive (.zip)
-+ Anypoint Studio Project from External Location
-+ Maven-based Mule Project from pom.xml
-+ Mule ESB Configuration XML from External Location
++ Anypoint Studio Project from File System
++ Packaged mule application (.jar)
 
 You can find a detailed description on how to do so in this [Documentation Page](http://www.mulesoft.org/documentation/display/current/Importing+and+Exporting+in+Studio).
 
@@ -169,9 +161,10 @@ Mule Studio provides you with really easy way to deploy your Template directly t
 In order to use this Mule Anypoint Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
 ### Application configuration
 **Application configuration**
++ http.port `9090` 
 
-+ http.port `9090`
-+ page.size `1000`		
+**Batch Aggregator configuration**
++ page.size `1000`	
 
 **SalesForce Connector configuration**
 
@@ -190,14 +183,14 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 
 + sap.default.accountGroup `ZAG2`
 
-#### SMTP Services configuration
+**SMTP Services configuration**
 
 + smtp.host `smtp.gmail.com`
 + smtp.port `587`
 + smtp.user `email@example.com`
 + smtp.password `password`
 
-#### Email Details
+**Email Details**
 
 + mail.from `batch.migrateAccounts.migration@mulesoft.com`
 + mail.to `your@email.com`
