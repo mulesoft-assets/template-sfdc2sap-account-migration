@@ -10,6 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>template-sfdc2sap-account-migration</artifactId>
 	<packaging>mule-application</packaging>
+	<version>2.1.0-SNAPSHOT</version>
 	<name>template-sfdc2sap-account-migration</name>
 
 	<build>
@@ -24,6 +25,29 @@
 					<sharedLibraries>
 						<!-- Please Add shared SAP libraries -->
 					</sharedLibraries>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.mulesoft.munit.tools</groupId>
+				<artifactId>munit-maven-plugin</artifactId>
+				<version>${munit.version}</version>
+				<executions>
+					<execution>
+						<id>test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>test</goal>
+							<goal>coverage-report</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<coverage>
+						<runCoverage>true</runCoverage>
+						<formats>
+							<format>html</format>
+						</formats>
+					</coverage>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -53,6 +77,23 @@
 		</dependency>
 		<!-- Please Add dependencies for SAP libraries -->
 
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-scripting-module</artifactId>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.munit</groupId>
+			<artifactId>munit-runner</artifactId>
+			<classifier>mule-plugin</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.munit</groupId>
+			<artifactId>munit-tools</artifactId>
+			<classifier>mule-plugin</classifier>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>

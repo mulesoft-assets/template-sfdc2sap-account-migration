@@ -197,7 +197,7 @@ DEBMAS01 : {
 ]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
-							<logger level="INFO" doc:name="Logger" doc:id="4aa15c0a-893c-49c1-a205-6eae436130be" message="Before Upsert #[output application/json --- payload]" />
+							<logger level="INFO" doc:name="Logger" doc:id="4aa15c0a-893c-49c1-a205-6eae436130be" message="#[output application/json --- payload]" />
 							<sap:send key="DEBMAS01" doc:name="upsert Customer in SAP" doc:id="1a1f6fdf-7250-49b2-80cf-925d6a6512bc" config-ref="SAP_Outbound" />
 						</foreach>
                 </batch:aggregator>
