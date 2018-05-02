@@ -4,8 +4,8 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
 	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
 	xsi:schemaLocation="
-http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd 
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 		http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
@@ -14,8 +14,6 @@ http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/
 	<munit:config name="test-suite.xml" />
 
 	<configuration-properties doc:name="Configuration properties" doc:id="c382dc50-b83c-41be-ad31-42ccb929d758" file="mule.test.properties" />
-	<configuration-properties doc:name="Configuration properties" doc:id="59fef852-f885-4b1e-baac-96bce830be9f" file="mule-artifact.properties" />
-	<configuration-properties doc:name="Configuration properties" doc:id="a0f29785-69a4-48b7-8ef5-410c95ee7ff2" file="common.properties" />
 
 	<munit:before-test name="test-suiteBefore_Test" description="Before tests actions" doc:id="7f8facb1-95ae-4456-9448-faf3a3a89dc9">
 		<flow-ref doc:name="Get test record from SAP" doc:id="1ae203be-dbee-4a45-bf16-d5c2755bb00e" name="getTestRecordFromSAP"/>
@@ -26,7 +24,7 @@ http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/
 				<ee:set-variable variableName="accounts" ><![CDATA[%dw 2.0
 output application/java
 ---
-vars.customerSAP ++ 
+vars.customerSAP ++
 [
 {
 	Description: "test description2",
@@ -36,7 +34,7 @@ vars.customerSAP ++
 }
 ]]]></ee:set-variable>
 			</ee:variables>
-		
+
 </ee:transform>
 		<salesforce:create type="Account" doc:name="Create Accounts in Salesforce" doc:id="d62c8e61-71a7-43f3-8aa0-b4b5cb5359a4"
 			config-ref="Salesforce_Sfdc_config" >
@@ -58,7 +56,7 @@ vars.customerSAP ++
 			</scripting:execute>
 			<flow-ref doc:name="Check Customer should be migrated to SAP" doc:id="a562a9af-0f0f-400a-a596-66a71ba66563" name="checkMigratedRecord"/>
 			<flow-ref doc:name="Check Customer shouldn't be migrated to SAP" doc:id="71d373ad-8d70-4ff8-be69-09d5b437b669" name="checkNotMigratedRecord"/>
-		
+
 </munit:execution>
 		<munit:validation>
 			<munit-tools:verify-call doc:name="Verify call" doc:id="d169a8c9-05fa-410f-bf1f-679ac50991ea" processor="sap:send"
@@ -107,7 +105,7 @@ output application/xml
 				<ee:set-variable variableName="customerSAP"><![CDATA[%dw 2.0
 output application/java
 ---
-payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map 
+payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map
 {
 	Name: $.FIELDVALUE,
 	Description: "test description1",
@@ -149,7 +147,7 @@ output application/xml
 					<ee:set-payload><![CDATA[%dw 2.0
 output application/java
 ---
-payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map 
+payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map
 {
 	Name: $.FIELDVALUE,
 	CustomerNumber : $.CUSTOMER
@@ -189,7 +187,7 @@ output application/xml
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/java
 ---
-payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map 
+payload."BAPI_CUSTOMER_FIND".tables."RESULT_TAB".*row map
 {
 	Name: $.FIELDVALUE,
 	CustomerNumber : $.CUSTOMER
