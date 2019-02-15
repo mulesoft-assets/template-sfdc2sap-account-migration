@@ -15,18 +15,6 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd">
 
 	<flow name="businessLogicFlow" doc:id="884f86c5-66e1-4701-bb9b-594c2a60abf3">
-		<salesforce:query doc:name="query accounts for migration"
-			doc:id="172ee596-eb2f-468b-a105-00c9378e512c" config-ref="Salesforce_Sfdc_config">
-			<salesforce:salesforce-query>SELECT AccountNumber, AccountSource,
-				AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode,
-				BillingState, BillingStreet, Description, Fax, Industry,
-				LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership,
-				ParentId, Phone, Rating, ShippingCity, ShippingCountry,
-				ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc,
-				Site, TickerSymbol, Type, Website FROM Account WHERE
-				NumberOfEmployees &gt; 9000 AND (Industry = 'Education' OR Industry
-				= 'Government')</salesforce:salesforce-query>
-		</salesforce:query>
 		<batch:job jobName="migratesfdc2sapAccountsBatch" doc:id="79b373e6-1aeb-43a9-9dfe-8ac0d2f31fdc">
 			<batch:process-records>
 				<batch:step name="getDataFromSAPStep" doc:id="232087de-e311-49c1-a890-439c65ea1af2">
@@ -237,8 +225,22 @@ DEBMAS01 : {
         </batch:on-complete>
     </batch:job>
 </flow>
-<flow name="mainFlow" doc:id="7c0a5bef-b3d5-442f-bff3-10d038f69a5e" >
-    <flow-ref doc:name="businessLogicFlow" doc:id="91360ede-4d71-44c7-9b64-8ee762e04ea0" name="businessLogicFlow"/>
+<flow name="queryFlow" doc:id="d60c7694-3211-4b04-809a-4c108a7bcd10" >
+		<salesforce:query doc:name="query accounts for migration" doc:id="172ee596-eb2f-468b-a105-00c9378e512c" config-ref="Salesforce_Sfdc_config">
+			<salesforce:salesforce-query>SELECT AccountNumber, AccountSource,
+				AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode,
+				BillingState, BillingStreet, Description, Fax, Industry,
+				LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership,
+				ParentId, Phone, Rating, ShippingCity, ShippingCountry,
+				ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc,
+				Site, TickerSymbol, Type, Website FROM Account WHERE
+				NumberOfEmployees &gt; 9000 AND (Industry = 'Education' OR Industry
+				= 'Government')</salesforce:salesforce-query>
+		</salesforce:query>
+	</flow>
+	<flow name="mainFlow" doc:id="7c0a5bef-b3d5-442f-bff3-10d038f69a5e" >
+    <flow-ref doc:name="queryFlow" doc:id="824c800d-5795-4c5c-b81c-a631886c6151" name="queryFlow"/>
+		<flow-ref doc:name="businessLogicFlow" doc:id="91360ede-4d71-44c7-9b64-8ee762e04ea0" name="businessLogicFlow"/>
     <error-handler >
         <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="488b507d-e26c-4c56-8759-8bb4f6645d71" type="ANY">
             <flow-ref doc:name="errorHandlingFlow" doc:id="afdaf73c-0137-4d60-84f6-5c41234771a3" name="errorHandlingFlow" />

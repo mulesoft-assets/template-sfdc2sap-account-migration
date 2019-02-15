@@ -49,7 +49,18 @@ vars.customerSAP ++
 	</munit:before-test>
 	<munit:test name="test-suite-businesslogicFlowTest" description="Test" doc:id="4ffcda90-21bf-4cd4-9460-09cf6ca578e5">
 		<munit:execution>
-			<flow-ref doc:name="businessLogicFlow" doc:id="3e0601a1-1b47-4974-83b0-8d30726559dd" name="businessLogicFlow" />
+			<flow-ref doc:name="Call queryFlow" doc:id="7468a312-c92b-46bc-8d59-7eda8126d41e" name="queryFlow"/>
+			<ee:transform doc:name="Filter test Records" doc:id="39aaab0b-c753-4427-8f0d-cabc6c6255d3" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload filter ($.Name == vars.accounts[0].Name
+	or $.Name == vars.accounts[1].Name  
+)]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Call businessLogicFlow" doc:id="3e0601a1-1b47-4974-83b0-8d30726559dd" name="businessLogicFlow" />
 			<scripting:execute doc:name="Sleep for 10s until the processing is completed" doc:id="b09fe305-3000-4571-b824-8b555395ccb7"
 				engine="groovy">
 				<scripting:code>sleep(10000)</scripting:code>
